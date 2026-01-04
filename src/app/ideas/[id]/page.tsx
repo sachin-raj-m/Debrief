@@ -113,6 +113,8 @@ import { Level2Form } from "@/components/forge/Level2Form";
 import { Level3Form } from "@/components/forge/Level3Form";
 import { Level4Form } from "@/components/forge/Level4Form";
 import { Level5Form } from "@/components/forge/Level5Form";
+import { BackingDialog } from "@/components/social/BackingDialog";
+import { ValuationCard } from "@/components/social/ValuationCard";
 
 function IdeaDetail({
     idea,
@@ -174,7 +176,7 @@ function IdeaDetail({
         <article className="mb-8 overflow-hidden rounded-[2.5rem] bg-card shadow-sm border border-border">
             {/* Header Section */}
             <div className="p-8 md:p-12 pb-0">
-                <div className="mb-6 flex items-center justify-between">
+                <div className="mb-6 flex flex-wrap gap-4 items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Avatar className="h-12 w-12 border border-border">
                             <AvatarImage src={idea.author?.avatar_url || undefined} />
@@ -186,22 +188,36 @@ function IdeaDetail({
                         </div>
                     </div>
 
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="gap-2 text-muted-foreground hover:text-foreground"
-                        onClick={() => {
-                            const url = `${window.location.origin}/share/${idea.id}`;
-                            navigator.clipboard.writeText(url);
-                            toast.success("Public link copied!");
-                        }}
-                    >
-                        <Share2 className="h-4 w-4" />
-                        Share Journey
-                    </Button>
+
+
+
+
+                    <div className="flex items-center gap-2 self-start md:self-auto">
+                        <BackingDialog ideaId={idea.id} />
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="gap-2 text-muted-foreground hover:text-foreground"
+                            onClick={() => {
+                                const url = `${window.location.origin}/share/${idea.id}`;
+                                navigator.clipboard.writeText(url);
+                                toast.success("Public link copied!");
+                            }}
+                        >
+                            <Share2 className="h-4 w-4" />
+                            Share
+                        </Button>
+                    </div>
                 </div>
 
-                <h1 className="mb-4 font-display text-3xl md:text-4xl font-bold leading-tight text-foreground tracking-tight">{idea.title}</h1>
+                <div className="grid gap-8 md:grid-cols-[1fr_300px]">
+                    <div>
+                        <h1 className="mb-4 font-display text-3xl md:text-4xl font-bold leading-tight text-foreground tracking-tight">{idea.title}</h1>
+                    </div>
+                    <div className="md:pt-2">
+                        <ValuationCard ideaId={idea.id} />
+                    </div>
+                </div>
 
                 {/* Tabs Navigation */}
                 <div className="flex items-center gap-6 border-b border-border mt-8">

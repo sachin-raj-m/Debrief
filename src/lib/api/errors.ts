@@ -119,7 +119,7 @@ export function errorResponse(error: unknown): NextResponse {
 
   // Handle unknown errors
   console.error("Unhandled API error:", error);
-  
+
   return NextResponse.json(
     {
       error: "INTERNAL_ERROR",
@@ -144,8 +144,14 @@ export function successResponse<T>(
 /**
  * Wraps an API handler with error handling
  */
-export function withErrorHandling<T>(
-  handler: () => Promise<NextResponse<T>>
-): Promise<NextResponse<T>> {
-  return handler().catch((error) => errorResponse(error) as NextResponse<T>);
+export function withErrorHandling(
+  handler: (...args: any[]) => Promise<NextResponse<unknown> | Response>
+) {
+  return async (...args: any[]) => {
+    try {
+      return await handler(...args);
+    } catch (error) {
+      return errorResponse(error);
+    }
+  };
 }
