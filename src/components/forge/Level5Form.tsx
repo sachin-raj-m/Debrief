@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { useUpdateIdeaLevel } from "@/hooks/use-forge";
+import { useUpdateIdeaLevel, useIdeaFeedback } from "@/hooks/use-forge";
 import type { IdeaLevel } from "@/types/database";
 import { FeedbackSummary } from "./FeedbackSummary";
 
@@ -17,10 +17,12 @@ interface Level5FormProps {
 
 export function Level5Form({ ideaId, levelData, isLocked = false, isOwner = false }: Level5FormProps) {
     const { mutate: updateLevel, isPending } = useUpdateIdeaLevel(ideaId);
+    const { data: feedback } = useIdeaFeedback(ideaId);
     const initialData = levelData?.data || {};
 
     const [formData, setFormData] = useState({
         key_learnings: initialData.key_learnings || "",
+        feedback_impact: initialData.feedback_impact || "",
         decision: initialData.decision || "", // Go, No-Go, Pivot
         pow_url: initialData.pow_url || ""
     });
@@ -29,6 +31,7 @@ export function Level5Form({ ideaId, levelData, isLocked = false, isOwner = fals
         if (levelData?.data) {
             setFormData({
                 key_learnings: levelData.data.key_learnings || "",
+                feedback_impact: levelData.data.feedback_impact || "",
                 decision: levelData.data.decision || "",
                 pow_url: levelData.data.pow_url || ""
             });
@@ -144,6 +147,21 @@ export function Level5Form({ ideaId, levelData, isLocked = false, isOwner = fals
                 </div>
 
                 <div className="space-y-3">
+                    <label htmlFor="feedback_impact" className="text-base font-semibold text-foreground">
+                        Feedback Impact <span className="text-muted-foreground font-normal text-sm ml-2">(How did peer feedback influence this?)</span>
+                    </label>
+                    <Textarea
+                        id="feedback_impact"
+                        name="feedback_impact"
+                        placeholder="Changes made based on feedback, valid critiques..."
+                        value={formData.feedback_impact}
+                        onChange={handleChange}
+                        disabled={isPending}
+                        className="min-h-[100px] text-base p-4 bg-background/50 border-input/60 focus:bg-background transition-colors resize-none"
+                    />
+                </div>
+
+                <div className="space-y-3">
                     <label htmlFor="pow_url" className="text-base font-semibold text-foreground">
                         Proof of Work URL <span className="text-muted-foreground font-normal text-sm ml-2">(Public link to evidence/result)</span>
                     </label>
@@ -159,15 +177,32 @@ export function Level5Form({ ideaId, levelData, isLocked = false, isOwner = fals
                 </div>
 
                 <div className="flex justify-end pt-4">
-                    <Button
-                        type="submit"
-                        variant="mint"
-                        size="lg"
-                        disabled={isPending}
-                        className="px-8 font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
-                    >
-                        {isPending ? "Finish Journey" : "Complete Journey"}
-                    </Button>
+                    {feedback?.data && feedback.data.length === 0 ? (
+                        <div className="text-right space-y-2">
+                            <div className="p-4 rounded-lg bg-orange-50 border border-orange-200 text-orange-800 text-sm max-w-md ml-auto">
+                                <p className="font-semibold flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" x2="12" y1="8" y2="12" /><line x1="12" x2="12.01" y1="16" y2="16" /></svg>
+                                    Feedback Required
+                                </p>
+                                <p className="mt-1">
+                                    You cannot complete the journey without peer feedback. Share your idea to get at least 1 review.
+                                </p>
+                            </div>
+                            <Button disabled variant="ghost" className="opacity-50 cursor-not-allowed">
+                                Complete Journey
+                            </Button>
+                        </div>
+                    ) : (
+                        <Button
+                            type="submit"
+                            variant="mint"
+                            size="lg"
+                            disabled={isPending}
+                            className="px-8 font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
+                        >
+                            {isPending ? "Finish Journey" : "Complete Journey"}
+                        </Button>
+                    )}
                 </div>
             </form>
         </div>

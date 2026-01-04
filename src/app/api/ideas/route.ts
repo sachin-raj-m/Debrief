@@ -15,6 +15,7 @@ import {
   RateLimitError,
   withErrorHandling,
 } from "@/lib/api/errors";
+import { enrichWithProfiles, enrichOneWithProfile } from "@/lib/db-utils";
 
 // Types for database responses
 interface IdeaRow {
@@ -47,7 +48,7 @@ interface VoteRow {
 export async function GET(request: NextRequest) {
   return withErrorHandling(async () => {
     const searchParams = request.nextUrl.searchParams;
-    
+
     // Parse and validate query params
     const query = getIdeasQuerySchema.parse({
       cursor: searchParams.get("cursor") || undefined,
@@ -99,22 +100,8 @@ export async function GET(request: NextRequest) {
     const hasMore = ideas.length > query.limit;
     const resultsToReturn = hasMore ? ideas.slice(0, -1) : ideas;
 
-    // Get unique user IDs and fetch profiles
-    const userIds = [...new Set(resultsToReturn.map((idea) => idea.user_id))];
-    let profiles: Record<string, ProfileRow> = {};
-    
-    if (userIds.length > 0) {
-      const { data: profilesData } = await supabase
-        .from("profiles")
-        .select("id, full_name, avatar_url")
-        .in("id", userIds);
-      
-      if (profilesData) {
-        profiles = Object.fromEntries(
-          (profilesData as unknown as ProfileRow[]).map((p) => [p.id, p])
-        );
-      }
-    }
+    // Enrich with authors efficiently
+    const ideasWithAuthors = await enrichWithProfiles(resultsToReturn, supabase);
 
     // Get user's votes if authenticated
     let userVotes: Record<string, number> = {};
@@ -132,10 +119,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Combine ideas with authors and votes
-    const ideasWithDetails = resultsToReturn.map((idea) => ({
+    // Combine ideas with votes (authors already attached)
+    const ideasWithDetails = ideasWithAuthors.map((idea) => ({
       ...idea,
-      author: profiles[idea.user_id] || { id: idea.user_id, full_name: null, avatar_url: null },
       user_vote: userVotes[idea.id]
         ? { idea_id: idea.id, user_id: user?.id, value: userVotes[idea.id] }
         : null,
@@ -189,7 +175,7 @@ export async function POST(request: NextRequest) {
         user_id: user.id,
         title: validatedData.title,
         description: validatedData.description,
-      } as Record<string, unknown>)
+      } as any)
       .select("*")
       .single();
 
@@ -199,25 +185,14 @@ export async function POST(request: NextRequest) {
 
     const idea = data as unknown as IdeaRow;
 
-    // Fetch author profile
+    // Fetch author profile efficiently
     const supabase = await createServerClient();
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("id, full_name, avatar_url")
-      .eq("id", user.id)
-      .single();
-
-    const author = (profileData as unknown as ProfileRow) || { 
-      id: user.id, 
-      full_name: user.user_metadata?.full_name || null, 
-      avatar_url: user.user_metadata?.avatar_url || null 
-    };
+    const enrichedIdea = await enrichOneWithProfile(idea, supabase);
 
     // Return the idea directly - not wrapped in data
     return successResponse({
       data: {
-        ...idea,
-        author,
+        ...enrichedIdea,
         user_vote: null,
       },
     }, 201);

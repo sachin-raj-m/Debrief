@@ -6,6 +6,7 @@ import {
     withErrorHandling,
 } from "@/lib/api/errors";
 import { awardKarma } from "@/lib/gamification";
+import { enrichWithProfiles } from "@/lib/db-utils";
 
 interface RouteContext {
     params: Promise<{ id: string }>;
@@ -27,7 +28,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
             .from("idea_feedback")
             .select("*")
             .eq("idea_id", id)
-            .order("created_at", { ascending: false });
+            .order("created_at", { ascending: false })
+            .limit(50); // Optimization: Limit to latest 50
 
         if (levelNumber) {
             query = query.eq("level_number", parseInt(levelNumber, 10));
@@ -37,27 +39,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
         if (error) throw error;
 
-        // Fetch authors manually
-        const userIds = [...new Set((feedbacks || []).map((f: any) => f.user_id))];
-        let profiles: Record<string, any> = {};
-
-        if (userIds.length > 0) {
-            const { data: profilesData } = await supabase
-                .from("profiles")
-                .select("id, full_name, avatar_url")
-                .in("id", userIds);
-
-            if (profilesData) {
-                profiles = Object.fromEntries(
-                    profilesData.map((p: any) => [p.id, p])
-                );
-            }
-        }
-
-        const enrichedData = (feedbacks || []).map((f: any) => ({
-            ...f,
-            author: profiles[f.user_id] || { id: f.user_id, full_name: "Unknown", avatar_url: null }
-        }));
+        // Use helper to fetch profiles
+        const enrichedData = await enrichWithProfiles(feedbacks || [], supabase);
 
         return successResponse({ data: enrichedData });
     });

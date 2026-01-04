@@ -14,6 +14,7 @@ import {
   ForbiddenError,
   withErrorHandling,
 } from "@/lib/api/errors";
+import { enrichOneWithProfile } from "@/lib/db-utils";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -67,19 +68,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     const idea = data as unknown as IdeaRow;
-
-    // Fetch author profile
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("id, full_name, avatar_url")
-      .eq("id", idea.user_id)
-      .single();
-
-    const author = (profileData as unknown as ProfileRow) || { 
-      id: idea.user_id, 
-      full_name: null, 
-      avatar_url: null 
-    };
+    const enrichedIdea = await enrichOneWithProfile(idea, supabase);
 
     // Get user's vote if authenticated
     let userVote: VoteRow | null = null;
@@ -96,8 +85,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     return successResponse({
       data: {
-        ...idea,
-        author,
+        ...enrichedIdea,
         user_vote: userVote,
       },
     });

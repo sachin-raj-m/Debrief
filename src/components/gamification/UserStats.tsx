@@ -15,29 +15,16 @@ export function UserStats({ userId }: UserStatsProps) {
     const { data: stats, isLoading } = useQuery({
         queryKey: ["user_stats", userId],
         queryFn: async () => {
-            // Fetch profile for karma
-            const { data: profile } = await supabase
-                .from("profiles")
-                .select("karma")
-                .eq("id", userId)
-                .single();
-
-            // Fetch ideas count
-            const { count: ideasCount } = await supabase
-                .from("ideas")
-                .select("*", { count: "exact", head: true })
-                .eq("user_id", userId);
-
-            // Fetch feedback given count
-            const { count: feedbackCount } = await supabase
-                .from("idea_feedback")
-                .select("*", { count: "exact", head: true })
-                .eq("user_id", userId);
+            const [profileResult, ideasResult, feedbackResult] = await Promise.all([
+                supabase.from("profiles").select("karma").eq("id", userId).single(),
+                supabase.from("ideas").select("*", { count: "exact", head: true }).eq("user_id", userId),
+                supabase.from("idea_feedback").select("*", { count: "exact", head: true }).eq("user_id", userId)
+            ]);
 
             return {
-                karma: profile?.karma || 0,
-                ideas: ideasCount || 0,
-                feedback: feedbackCount || 0,
+                karma: profileResult.data?.karma || 0,
+                ideas: ideasResult.count || 0,
+                feedback: feedbackResult.count || 0,
             };
         },
         enabled: !!userId,

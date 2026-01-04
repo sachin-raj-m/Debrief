@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useUpdateIdeaLevel } from "@/hooks/use-forge";
 import { toast } from "sonner";
+import { ForgeNudge } from "./ForgeNudge";
 import type { IdeaLevel } from "@/types/database";
 import { FeedbackSection } from "./FeedbackSection";
 
@@ -116,6 +117,15 @@ export function Level1Form({ ideaId, levelData, isLocked = false, isOwner = fals
 
     return (
         <div className="space-y-8 max-w-2xl mx-auto">
+            {!isLocked && isOwner && (
+                <ForgeNudge
+                    type="desirability"
+                    title="Focus on Desirability"
+                >
+                    Level 1 is about ensuring people actually want this. Focus on the problem, not the solution.
+                </ForgeNudge>
+            )}
+
             <div className="space-y-2 border-b border-border pb-4">
                 <h3 className="font-display text-2xl font-bold text-foreground">Problem Clarity</h3>
                 <p className="text-muted-foreground text-lg">
