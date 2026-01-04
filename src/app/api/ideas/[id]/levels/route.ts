@@ -13,21 +13,20 @@ interface RouteContext {
  * GET /api/ideas/[id]/levels
  * Get all levels for an idea
  */
-export async function GET(request: NextRequest, context: RouteContext) {
-    return withErrorHandling(async () => {
-        const { id } = await context.params;
-        const supabase = await createServerClient();
+export const GET = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
+    const { id } = await context.params;
+    const supabase = await createServerClient();
 
-        const { data, error } = await supabase
-            .from("idea_levels")
-            .select("*")
-            .eq("idea_id", id)
-            .order("level_number", { ascending: true });
+    const { data, error } = await supabase
+        .from("idea_levels")
+        .select("*")
+        .eq("idea_id", id)
+        .order("level_number", { ascending: true });
 
-        if (error) {
-            throw error;
-        }
+    if (error) {
+        throw error;
+    }
 
-        return successResponse({ data: data || [] });
-    });
-}
+    return successResponse({ data: data || [] });
+});
+

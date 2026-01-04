@@ -83,6 +83,18 @@ export interface IdeaFeedback {
   author?: Pick<Profile, "id" | "full_name" | "avatar_url">;
 }
 
+export interface IdeaBacker {
+  id: string;
+  idea_id: string;
+  user_id: string;
+  pledge_amount: number;
+  comment: string | null;
+  is_anonymous: boolean;
+  created_at: string;
+  updated_at: string;
+  user?: Pick<Profile, "id" | "full_name" | "avatar_url">;
+}
+
 // Joined types for API responses
 export interface IdeaWithAuthor extends Idea {
   author: Pick<Profile, "id" | "full_name" | "avatar_url">;
@@ -139,6 +151,11 @@ export interface Database {
         Row: UserBadge;
         Insert: Pick<UserBadge, "user_id" | "badge_id">;
         Update: never;
+      };
+      idea_backers: {
+        Row: IdeaBacker;
+        Insert: Pick<IdeaBacker, "idea_id" | "user_id" | "pledge_amount" | "comment" | "is_anonymous">;
+        Update: Partial<Pick<IdeaBacker, "pledge_amount" | "comment" | "is_anonymous">>;
       };
     };
   };
