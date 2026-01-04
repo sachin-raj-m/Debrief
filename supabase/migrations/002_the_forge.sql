@@ -48,10 +48,12 @@ ALTER TABLE public.idea_levels ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.idea_feedback ENABLE ROW LEVEL SECURITY;
 
 -- Idea Levels Policies
+DROP POLICY IF EXISTS "Idea levels are viewable by everyone" ON public.idea_levels;
 CREATE POLICY "Idea levels are viewable by everyone"
     ON public.idea_levels FOR SELECT
     USING (true);
 
+DROP POLICY IF EXISTS "Users can insert levels for own ideas" ON public.idea_levels;
 CREATE POLICY "Users can insert levels for own ideas"
     ON public.idea_levels FOR INSERT
     WITH CHECK (
@@ -61,6 +63,7 @@ CREATE POLICY "Users can insert levels for own ideas"
         )
     );
 
+DROP POLICY IF EXISTS "Users can update own idea levels" ON public.idea_levels;
 CREATE POLICY "Users can update own idea levels"
     ON public.idea_levels FOR UPDATE
     USING (
@@ -71,28 +74,34 @@ CREATE POLICY "Users can update own idea levels"
     );
 
 -- Idea Feedback Policies
+DROP POLICY IF EXISTS "Feedback is viewable by everyone" ON public.idea_feedback;
 CREATE POLICY "Feedback is viewable by everyone"
     ON public.idea_feedback FOR SELECT
     USING (true);
 
+DROP POLICY IF EXISTS "Authenticated users can create feedback" ON public.idea_feedback;
 CREATE POLICY "Authenticated users can create feedback"
     ON public.idea_feedback FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own feedback" ON public.idea_feedback;
 CREATE POLICY "Users can update own feedback"
     ON public.idea_feedback FOR UPDATE
     USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete own feedback" ON public.idea_feedback;
 CREATE POLICY "Users can delete own feedback"
     ON public.idea_feedback FOR DELETE
     USING (auth.uid() = user_id);
 
 -- 5. Triggers for updated_at
+DROP TRIGGER IF EXISTS update_idea_levels_updated_at ON public.idea_levels;
 CREATE TRIGGER update_idea_levels_updated_at
     BEFORE UPDATE ON public.idea_levels
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at();
 
+DROP TRIGGER IF EXISTS update_idea_feedback_updated_at ON public.idea_feedback;
 CREATE TRIGGER update_idea_feedback_updated_at
     BEFORE UPDATE ON public.idea_feedback
     FOR EACH ROW
