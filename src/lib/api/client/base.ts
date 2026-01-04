@@ -52,7 +52,7 @@ async function request<T>(endpoint: string, config: RequestConfig = {}): Promise
             };
         }
 
-        return data;
+        return { data };
     } catch (error) {
         return {
             error: {

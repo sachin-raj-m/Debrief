@@ -72,6 +72,28 @@ export interface CreateCommentResponse {
   data: CommentWithAuthor;
 }
 
+// ===================================
+// PIVOT / VERSION HISTORY
+// ===================================
+import type { IdeaVersion, IdeaVersionWithMetadata } from "./database";
+
+export interface CreatePivotRequest {
+  new_title?: string;
+  new_description?: string;
+  pivot_reason: string;
+}
+
+export interface CreatePivotResponse {
+  data: {
+    version: IdeaVersion;
+    updated_idea: IdeaWithAuthor;
+  };
+}
+
+export interface GetVersionHistoryResponse {
+  data: IdeaVersionWithMetadata[];
+}
+
 export interface GetCommentsResponse extends PaginatedResponse<CommentWithAuthor> {}
 
 // ===================================

@@ -115,6 +115,7 @@ import { Level4Form } from "@/components/forge/Level4Form";
 import { Level5Form } from "@/components/forge/Level5Form";
 import { BackingDialog } from "@/components/social/BackingDialog";
 import { ValuationCard } from "@/components/social/ValuationCard";
+import { PivotDialog, PivotTimeline } from "@/components/pivot";
 
 function IdeaDetail({
     idea,
@@ -131,7 +132,7 @@ function IdeaDetail({
     const { mutate: vote, isPending: isVoting } = useVote(idea.id);
     const { mutate: removeVote, isPending: isRemoving } = useRemoveVote(idea.id);
     const { data: levels } = useIdeaLevels(idea.id);
-    const [activeTab, setActiveTab] = useState<"description" | "journey">("description");
+    const [activeTab, setActiveTab] = useState<"description" | "journey" | "history">("description");
 
     const currentLevel = idea.current_level || 0;
 
@@ -155,6 +156,14 @@ function IdeaDetail({
 
     const userVote = idea.user_vote?.value;
     const netVotes = (idea.upvotes_count ?? 0) - (idea.downvotes_count ?? 0);
+
+    // Debug logging for pivot button visibility
+    console.log('Pivot button debug:', {
+        isAuthenticated,
+        userId: user?.id,
+        ideaUserId: idea.user_id,
+        shouldShow: isAuthenticated && user?.id === idea.user_id
+    });
 
     const handleVote = (value: 1 | -1) => {
         if (authLoading) return;
@@ -193,6 +202,13 @@ function IdeaDetail({
 
 
                     <div className="flex items-center gap-2 self-start md:self-auto">
+                        {isAuthenticated && user?.id === idea.user_id && (
+                            <PivotDialog
+                                ideaId={idea.id}
+                                currentTitle={idea.title}
+                                currentDescription={idea.description}
+                            />
+                        )}
                         <BackingDialog ideaId={idea.id} />
                         <Button
                             variant="ghost"
@@ -245,6 +261,18 @@ function IdeaDetail({
                             <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
                         )}
                     </button>
+                    <button
+                        onClick={() => setActiveTab("history")}
+                        className={cn(
+                            "pb-4 text-sm font-medium transition-colors relative",
+                            activeTab === "history" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                        )}
+                    >
+                        Version History
+                        {activeTab === "history" && (
+                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
+                        )}
+                    </button>
                 </div>
             </div>
 
@@ -289,7 +317,7 @@ function IdeaDetail({
                             </span>
                         </div>
                     </>
-                ) : (
+                ) : activeTab === "journey" ? (
                     <div className="space-y-8">
                         <JourneyStepper
                             currentLevel={currentLevel}
@@ -354,6 +382,10 @@ function IdeaDetail({
                                 />
                             )}
                         </div>
+                    </div>
+                ) : (
+                    <div className="space-y-6">
+                        <PivotTimeline ideaId={idea.id} />
                     </div>
                 )}
 

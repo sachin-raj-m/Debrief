@@ -10,7 +10,9 @@ interface ValuationCardProps {
 }
 
 export function ValuationCard({ ideaId }: ValuationCardProps) {
-    const { data: backersData, isLoading } = useIdeaBackers(ideaId);
+    const { data: backersData, isLoading, isError } = useIdeaBackers(ideaId);
+
+    console.log('ValuationCard debug:', { backersData, isLoading, isError });
 
     if (isLoading) {
         return (
@@ -18,14 +20,26 @@ export function ValuationCard({ ideaId }: ValuationCardProps) {
         );
     }
 
-    const { meta, data: backers } = backersData || { meta: { total_pledged: 0, backers_count: 0 }, data: [] };
+    if (isError || !backersData) {
+        return (
+            <Card className="w-full h-48 bg-muted/50 flex items-center justify-center">
+                <p className="text-sm text-muted-foreground">Unable to load valuation data</p>
+            </Card>
+        );
+    }
+
+    const { meta, data: backers } = backersData;
+
+    console.log('Extracted data:', { meta, backers, total_pledged: meta?.total_pledged });
 
     // Format currency
-    const formattedValuation = new Intl.NumberFormat('en-US', {
+    const formattedValuation = new Intl.NumberFormat('en-IN', {
         style: 'currency',
         currency: 'INR',
         maximumFractionDigits: 0,
-    }).format(meta.total_pledged);
+    }).format(meta?.total_pledged || 0);
+
+    console.log('Formatted valuation:', formattedValuation);
 
     return (
         <Card className="w-full border-mint-500/20 bg-mint-50/50 dark:bg-mint-950/10">
@@ -38,7 +52,7 @@ export function ValuationCard({ ideaId }: ValuationCardProps) {
                     {formattedValuation}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                    Based on {meta.backers_count} backers pledging non-binding support.
+                    Based on {meta?.backers_count || 0} backers pledging non-binding support.
                 </p>
             </CardHeader>
             <CardContent>
@@ -47,7 +61,7 @@ export function ValuationCard({ ideaId }: ValuationCardProps) {
                         <Users className="h-4 w-4" />
                         Recent Backers
                     </h4>
-                    {backers.length === 0 ? (
+                    {!backers || backers.length === 0 ? (
                         <p className="text-sm text-muted-foreground italic">Be the first to back this idea!</p>
                     ) : (
                         <div className="space-y-3">

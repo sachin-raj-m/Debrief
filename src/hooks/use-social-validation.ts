@@ -13,9 +13,9 @@ interface BackingResponse {
 
 export function useIdeaBackers(ideaId: string) {
     return useQuery<BackingResponse>({
-        queryKey: ["idea_backers", ideaId],
+        queryKey: ["idea_backers_v2", ideaId], // Changed key to force cache refresh
         queryFn: async () => {
-            const response = await apiClient.get<BackingResponse>(`/ideas/${ideaId}/backers`);
+            const response = await apiClient.get<BackingResponse>(`/api/ideas/${ideaId}/backers`);
             if (response.error) throw new Error(response.error.message);
             return response.data!; // apiClient wrapper returns { data, error }
         },
@@ -27,12 +27,14 @@ export function useBackIdea(ideaId: string) {
 
     return useMutation({
         mutationFn: async (data: { pledge_amount: number; comment?: string; is_anonymous?: boolean }) => {
-            const response = await apiClient.post(`/ideas/${ideaId}/back`, data);
+            const response = await apiClient.post(`/api/ideas/${ideaId}/back`, data);
             if (response.error) throw new Error(response.error.message);
             return response.data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["idea_backers", ideaId] });
+        onSuccess: async () => {
+            // Force refetch the backers data
+            await queryClient.invalidateQueries({ queryKey: ["idea_backers_v2", ideaId] });
+            await queryClient.refetchQueries({ queryKey: ["idea_backers_v2", ideaId] });
             toast.success("Thanks for backing this idea!");
         },
         onError: (error) => {

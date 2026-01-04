@@ -95,6 +95,21 @@ export interface IdeaBacker {
   user?: Pick<Profile, "id" | "full_name" | "avatar_url">;
 }
 
+export interface IdeaVersion {
+  id: string;
+  idea_id: string;
+  version_number: number;
+  title: string;
+  description: string;
+  current_level_at_pivot: number;
+  pivot_reason: string | null;
+  created_at: string;
+}
+
+export interface IdeaVersionWithMetadata extends IdeaVersion {
+  is_current?: boolean;
+}
+
 // Joined types for API responses
 export interface IdeaWithAuthor extends Idea {
   author: Pick<Profile, "id" | "full_name" | "avatar_url">;
@@ -156,6 +171,11 @@ export interface Database {
         Row: IdeaBacker;
         Insert: Pick<IdeaBacker, "idea_id" | "user_id" | "pledge_amount" | "comment" | "is_anonymous">;
         Update: Partial<Pick<IdeaBacker, "pledge_amount" | "comment" | "is_anonymous">>;
+      };
+      idea_versions: {
+        Row: IdeaVersion;
+        Insert: Pick<IdeaVersion, "idea_id" | "title" | "description" | "current_level_at_pivot" | "pivot_reason">;
+        Update: never; // Versions are immutable
       };
     };
   };
