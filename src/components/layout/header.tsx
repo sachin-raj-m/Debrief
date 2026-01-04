@@ -12,7 +12,7 @@ export function Header() {
         <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
                 <Link href="/" className="flex items-center gap-2 no-underline">
-                    <span className="font-display text-2xl font-bold tracking-tight text-foreground">mupoll</span>
+                    <span className="font-display text-2xl font-bold tracking-tight text-foreground">debrief</span>
                 </Link>
 
                 <nav className="flex items-center gap-6">

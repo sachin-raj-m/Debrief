@@ -18,8 +18,8 @@ export default function HomePage() {
       <Header />
       <main className="mx-auto max-w-7xl px-6 py-8">
         <div className="mb-8">
-          <h1 className="font-display text-4xl font-bold text-foreground mb-2">mupoll</h1>
-          <p className="font-sans text-base text-muted-foreground">Share your ideas, get feedback</p>
+          <h1 className="font-display text-4xl font-bold text-foreground mb-2">Debrief</h1>
+          <p className="font-sans text-base text-muted-foreground">Validate, refine, and prove your ideas.</p>
         </div>
 
         <div className="flex justify-end mb-4">

@@ -19,8 +19,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "MuPoll - Share and Vote on Ideas",
-  description: "A platform to share your ideas and get feedback from the community through voting and comments.",
+  title: "Debrief - Validate Your Ideas",
+  description: "A forge for your ideas. Validate, refine, and prove your concepts before you build.",
 };
 
 export default function RootLayout({
