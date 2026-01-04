@@ -5,15 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useUpdateIdeaLevel } from "@/hooks/use-forge";
 import type { IdeaLevel } from "@/types/database";
+import { FeedbackSection } from "./FeedbackSection";
 
 interface Level4FormProps {
     ideaId: string;
     levelData?: IdeaLevel;
     isLocked?: boolean;
     isOwner?: boolean;
+    isAuthenticated?: boolean;
 }
 
-export function Level4Form({ ideaId, levelData, isLocked = false, isOwner = false }: Level4FormProps) {
+export function Level4Form({ ideaId, levelData, isLocked = false, isOwner = false, isAuthenticated = false }: Level4FormProps) {
     const { mutate: updateLevel, isPending } = useUpdateIdeaLevel(ideaId);
     const initialData = levelData?.data || {};
 
@@ -149,6 +151,13 @@ export function Level4Form({ ideaId, levelData, isLocked = false, isOwner = fals
                     </Button>
                 </div>
             </form>
+
+            <FeedbackSection
+                ideaId={ideaId}
+                levelNumber={4}
+                isOwner={isOwner}
+                isAuthenticated={isAuthenticated}
+            />
         </div>
     );
 }

@@ -4,16 +4,19 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useUpdateIdeaLevel } from "@/hooks/use-forge";
+import { toast } from "sonner";
 import type { IdeaLevel } from "@/types/database";
+import { FeedbackSection } from "./FeedbackSection";
 
 interface Level2FormProps {
     ideaId: string;
     levelData?: IdeaLevel;
     isLocked?: boolean;
     isOwner?: boolean;
+    isAuthenticated?: boolean;
 }
 
-export function Level2Form({ ideaId, levelData, isLocked = false, isOwner = false }: Level2FormProps) {
+export function Level2Form({ ideaId, levelData, isLocked = false, isOwner = false, isAuthenticated = false }: Level2FormProps) {
     const { mutate: updateLevel, isPending } = useUpdateIdeaLevel(ideaId);
     const initialData = levelData?.data || {};
 
@@ -83,6 +86,12 @@ export function Level2Form({ ideaId, levelData, isLocked = false, isOwner = fals
                         </div>
                     </div>
                 </div>
+                <FeedbackSection
+                    ideaId={ideaId}
+                    levelNumber={2}
+                    isOwner={isOwner}
+                    isAuthenticated={isAuthenticated}
+                />
             </div>
         );
     }
@@ -152,6 +161,14 @@ export function Level2Form({ ideaId, levelData, isLocked = false, isOwner = fals
                     </Button>
                 </div>
             </form>
+
+            <FeedbackSection
+                ideaId={ideaId}
+                levelNumber={2}
+                isOwner={isOwner}
+                isAuthenticated={isAuthenticated}
+                isAuthenticated={isAuthenticated}
+            />
         </div>
     );
 }

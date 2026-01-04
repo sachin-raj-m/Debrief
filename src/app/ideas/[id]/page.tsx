@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useIdea, useVote, useRemoveVote, useComments, useCreateComment, useAuth } from "@/hooks";
 import { formatDistanceToNow, getInitials } from "@/lib/utils";
 import { toast } from "sonner";
+import { Share2 } from "lucide-react";
 
 interface IdeaPageProps {
     params: Promise<{ id: string }>;
@@ -173,15 +174,31 @@ function IdeaDetail({
         <article className="mb-8 overflow-hidden rounded-[2.5rem] bg-card shadow-sm border border-border">
             {/* Header Section */}
             <div className="p-8 md:p-12 pb-0">
-                <div className="mb-6 flex items-center gap-4">
-                    <Avatar className="h-12 w-12 border border-border">
-                        <AvatarImage src={idea.author?.avatar_url || undefined} />
-                        <AvatarFallback>{getInitials(idea.author?.full_name)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                        <span className="font-semibold text-foreground">{idea.author?.full_name || "Anonymous"}</span>
-                        <span className="text-sm text-muted-foreground">{formatDistanceToNow(idea.created_at)}</span>
+                <div className="mb-6 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <Avatar className="h-12 w-12 border border-border">
+                            <AvatarImage src={idea.author?.avatar_url || undefined} />
+                            <AvatarFallback>{getInitials(idea.author?.full_name)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col">
+                            <span className="font-semibold text-foreground">{idea.author?.full_name || "Anonymous"}</span>
+                            <span className="text-sm text-muted-foreground">{formatDistanceToNow(idea.created_at)}</span>
+                        </div>
                     </div>
+
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-2 text-muted-foreground hover:text-foreground"
+                        onClick={() => {
+                            const url = `${window.location.origin}/share/${idea.id}`;
+                            navigator.clipboard.writeText(url);
+                            toast.success("Public link copied!");
+                        }}
+                    >
+                        <Share2 className="h-4 w-4" />
+                        Share Journey
+                    </Button>
                 </div>
 
                 <h1 className="mb-4 font-display text-3xl md:text-4xl font-bold leading-tight text-foreground tracking-tight">{idea.title}</h1>
@@ -278,6 +295,7 @@ function IdeaDetail({
                                     levelData={levels?.data?.find(l => l.level_number === 1)}
                                     isLocked={currentLevel < 0} // Always unlocked basically
                                     isOwner={user?.id === idea.user_id}
+                                    isAuthenticated={isAuthenticated}
                                 />
                             )}
 
@@ -287,6 +305,7 @@ function IdeaDetail({
                                     levelData={levels?.data?.find(l => l.level_number === 2)}
                                     isLocked={currentLevel < 1}
                                     isOwner={user?.id === idea.user_id}
+                                    isAuthenticated={isAuthenticated}
                                 />
                             )}
 
@@ -296,6 +315,7 @@ function IdeaDetail({
                                     levelData={levels?.data?.find(l => l.level_number === 3)}
                                     isLocked={currentLevel < 2}
                                     isOwner={user?.id === idea.user_id}
+                                    isAuthenticated={isAuthenticated}
                                 />
                             )}
 
@@ -305,6 +325,7 @@ function IdeaDetail({
                                     levelData={levels?.data?.find(l => l.level_number === 4)}
                                     isLocked={currentLevel < 3}
                                     isOwner={user?.id === idea.user_id}
+                                    isAuthenticated={isAuthenticated}
                                 />
                             )}
 

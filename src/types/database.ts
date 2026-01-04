@@ -62,6 +62,7 @@ export interface IdeaFeedback {
   tags: string[];
   created_at: string;
   updated_at: string;
+  author?: Pick<Profile, "id" | "full_name" | "avatar_url">;
 }
 
 // Joined types for API responses

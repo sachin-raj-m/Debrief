@@ -5,16 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useUpdateIdeaLevel } from "@/hooks/use-forge";
+import { toast } from "sonner";
 import type { IdeaLevel } from "@/types/database";
+import { FeedbackSection } from "./FeedbackSection";
 
 interface Level3FormProps {
     ideaId: string;
     levelData?: IdeaLevel;
     isLocked?: boolean;
     isOwner?: boolean;
+    isAuthenticated?: boolean;
 }
 
-export function Level3Form({ ideaId, levelData, isLocked = false, isOwner = false }: Level3FormProps) {
+export function Level3Form({ ideaId, levelData, isLocked = false, isOwner = false, isAuthenticated = false }: Level3FormProps) {
     const { mutate: updateLevel, isPending } = useUpdateIdeaLevel(ideaId);
     const initialData = levelData?.data || {};
 
@@ -133,7 +136,6 @@ export function Level3Form({ ideaId, levelData, isLocked = false, isOwner = fals
                         placeholder="e.g. 10 signups, 5 calls booked, 15% conversion rate"
                         value={formData.success_metric}
                         onChange={handleChange}
-                        disabled={isPending}
                         className="h-12 text-base px-4 bg-background/50 border-input/60 focus:bg-background transition-colors"
                     />
                 </div>
@@ -150,6 +152,13 @@ export function Level3Form({ ideaId, levelData, isLocked = false, isOwner = fals
                     </Button>
                 </div>
             </form>
+
+            <FeedbackSection
+                ideaId={ideaId}
+                levelNumber={3}
+                isOwner={isOwner}
+                isAuthenticated={isAuthenticated}
+            />
         </div>
     );
 }

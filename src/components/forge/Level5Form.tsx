@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useUpdateIdeaLevel } from "@/hooks/use-forge";
 import type { IdeaLevel } from "@/types/database";
+import { FeedbackSummary } from "./FeedbackSummary";
 
 interface Level5FormProps {
     ideaId: string;
@@ -97,6 +98,8 @@ export function Level5Form({ ideaId, levelData, isLocked = false, isOwner = fals
                     What happened? What's next?
                 </p>
             </div>
+
+            <FeedbackSummary ideaId={ideaId} />
 
             <form onSubmit={handleSubmit} className="space-y-8">
                 <div className="space-y-3">

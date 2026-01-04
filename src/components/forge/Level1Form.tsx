@@ -7,15 +7,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { useUpdateIdeaLevel } from "@/hooks/use-forge";
 import { toast } from "sonner";
 import type { IdeaLevel } from "@/types/database";
+import { FeedbackSection } from "./FeedbackSection";
 
 interface Level1FormProps {
     ideaId: string;
     levelData?: IdeaLevel;
     isLocked?: boolean;
     isOwner?: boolean;
+    isAuthenticated?: boolean;
 }
 
-export function Level1Form({ ideaId, levelData, isLocked = false, isOwner = false }: Level1FormProps) {
+export function Level1Form({ ideaId, levelData, isLocked = false, isOwner = false, isAuthenticated = false }: Level1FormProps) {
     const { mutate: updateLevel, isPending } = useUpdateIdeaLevel(ideaId);
 
     // Initial data from levelData.data (JSONB)
@@ -179,6 +181,13 @@ export function Level1Form({ ideaId, levelData, isLocked = false, isOwner = fals
                     </Button>
                 </div>
             </form>
+
+            <FeedbackSection
+                ideaId={ideaId}
+                levelNumber={1}
+                isOwner={isOwner}
+                isAuthenticated={isAuthenticated}
+            />
         </div>
     );
 }
