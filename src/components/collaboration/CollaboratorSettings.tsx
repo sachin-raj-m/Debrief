@@ -49,7 +49,7 @@ export function CollaboratorSettings({ ideaId, isOwner, currentUserId }: Collabo
 
     removeCollaborator(collaborator.id, {
       onSuccess: (response) => {
-        toast.success(response.data.message || "Collaborator removed");
+        toast.success("Collaborator removed successfully");
       },
       onError: (err: any) => {
         const message = err?.error?.message || err?.message || "Failed to remove collaborator";

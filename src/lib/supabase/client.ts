@@ -7,6 +7,10 @@
 
 import { createBrowserClient } from "@supabase/ssr";
 
+// Note: Using untyped Supabase client because manually-created Database types
+// don't work with Supabase's complex generic inference system.
+// For full type safety, generate types using: npx supabase gen types typescript
+
 // Read env vars directly to avoid import issues
 function getSupabaseConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

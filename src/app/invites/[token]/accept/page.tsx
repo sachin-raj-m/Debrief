@@ -17,6 +17,6 @@ export default async function InviteAcceptPage({ params }: PageProps) {
 }
 
 export const metadata = {
-  title: "Accept Invitation | MuPoll",
+  title: "Accept Invitation | debrief",
   description: "Accept your collaboration invitation",
 };

@@ -4,7 +4,7 @@
  * Standardized error responses for API routes.
  */
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
 
 export class ApiError extends Error {
@@ -148,16 +148,19 @@ export function successResponse<T>(
 }
 
 /**
- * Wraps an API handler with error handling
+ * Wraps an API handler with error handling.
+ * Uses generics to preserve the original handler's type signature.
  */
-export function withErrorHandling(
-  handler: (...args: any[]) => Promise<NextResponse<unknown> | Response>
-) {
-  return async (...args: any[]) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function withErrorHandling<T extends (...args: any[]) => Promise<NextResponse<unknown> | Response>>(
+  handler: T
+): T {
+  const wrapped = async (...args: Parameters<T>) => {
     try {
       return await handler(...args);
     } catch (error) {
       return errorResponse(error);
     }
   };
+  return wrapped as T;
 }

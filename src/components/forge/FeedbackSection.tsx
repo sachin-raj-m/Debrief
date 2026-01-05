@@ -94,7 +94,7 @@ export function FeedbackSection({ ideaId, levelNumber, isOwner, isAuthenticated 
                     feedbacks.map((item) => (
                         <div key={item.id} className="flex gap-4 p-4 rounded-xl bg-card border border-border/50 shadow-sm">
                             <Avatar className="h-10 w-10 border border-border">
-                                <AvatarImage src={item.author?.avatar_url} />
+                                <AvatarImage src={item.author?.avatar_url ?? undefined} />
                                 <AvatarFallback>{getInitials(item.author?.full_name)}</AvatarFallback>
                             </Avatar>
                             <div className="flex-1 space-y-1">

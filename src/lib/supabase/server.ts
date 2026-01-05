@@ -13,8 +13,11 @@ import "server-only";
 import { createServerClient as createSupabaseServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
-import type { Database } from "@/types/database";
 import { publicEnv, serverEnv } from "@/lib/env.server";
+
+// Note: Using untyped Supabase client because manually-created Database types
+// don't work with Supabase's complex generic inference system.
+// For full type safety, generate types using: npx supabase gen types typescript
 
 /**
  * Creates a Supabase client for server components that respects RLS.
@@ -23,7 +26,7 @@ import { publicEnv, serverEnv } from "@/lib/env.server";
 export async function createServerClient() {
   const cookieStore = await cookies();
 
-  return createSupabaseServerClient<Database>(
+  return createSupabaseServerClient(
     publicEnv.NEXT_PUBLIC_SUPABASE_URL,
     publicEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
     {
@@ -58,7 +61,7 @@ export async function createServerClient() {
  * ALWAYS validate user permissions manually before operations.
  */
 export function createAdminClient() {
-  return createClient<Database>(
+  return createClient(
     publicEnv.NEXT_PUBLIC_SUPABASE_URL,
     serverEnv.SUPABASE_SECRET_KEY,
     {

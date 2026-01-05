@@ -2,7 +2,7 @@
 -- Team Collaboration System
 -- =====================================================
 -- Description: Enables founders to invite team members/co-founders to collaborate on ideas
--- Author: MuPoll Team
+-- Author: debrief Team
 -- Date: 2026-01-05
 
 -- =====================================================

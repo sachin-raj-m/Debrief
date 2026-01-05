@@ -1,5 +1,5 @@
 -- =============================================
--- MUPOLL DATABASE SCHEMA
+-- debrief DATABASE SCHEMA
 -- Production-grade schema for Idea Poll application
 -- =============================================
 

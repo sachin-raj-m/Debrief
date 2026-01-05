@@ -1,5 +1,5 @@
 /**
- * Database Types for MuPoll
+ * Database Types for debrief
  * These types mirror the database schema
  */
 
@@ -151,51 +151,61 @@ export interface Database {
         Row: Profile;
         Insert: Omit<Profile, "created_at" | "updated_at">;
         Update: Partial<Omit<Profile, "id" | "created_at">>;
+        Relationships: [];
       };
       ideas: {
         Row: Idea;
         Insert: Pick<Idea, "user_id" | "title" | "description">;
         Update: Partial<Pick<Idea, "title" | "description">>;
+        Relationships: [];
       };
       votes: {
         Row: Vote;
         Insert: Pick<Vote, "idea_id" | "user_id" | "value">;
         Update: Pick<Vote, "value">;
+        Relationships: [];
       };
       comments: {
         Row: Comment;
         Insert: Pick<Comment, "idea_id" | "user_id" | "content">;
         Update: never;
+        Relationships: [];
       };
       idea_levels: {
         Row: IdeaLevel;
         Insert: Pick<IdeaLevel, "idea_id" | "level_number" | "status" | "data">;
         Update: Partial<Pick<IdeaLevel, "status" | "data">>;
+        Relationships: [];
       };
       idea_feedback: {
         Row: IdeaFeedback;
-        Insert: Pick<IdeaFeedback, "idea_id" | "level_number" | "user_id" | "content" | "ratings" | "tags">;
+        Insert: Pick<IdeaFeedback, "idea_id" | "level_number" | "user_id" | "content" | "ratings"> & { tags?: string[] };
         Update: Partial<Pick<IdeaFeedback, "content" | "ratings" | "tags">>;
+        Relationships: [];
       };
       badges: {
         Row: Badge;
         Insert: Pick<Badge, "slug" | "name" | "description" | "icon_name">;
         Update: Partial<Pick<Badge, "name" | "description" | "icon_name">>;
+        Relationships: [];
       };
       user_badges: {
         Row: UserBadge;
         Insert: Pick<UserBadge, "user_id" | "badge_id">;
         Update: never;
+        Relationships: [];
       };
       idea_backers: {
         Row: IdeaBacker;
         Insert: Pick<IdeaBacker, "idea_id" | "user_id" | "pledge_amount" | "comment" | "is_anonymous">;
-        Update: Partial<Pick<IdeaBacker, "pledge_amount" | "comment" | "is_anonymous">>;
+        Update: Partial<Pick<IdeaBacker, "pledge_amount" | "comment" | "is_anonymous" | "updated_at">>;
+        Relationships: [];
       };
       idea_versions: {
         Row: IdeaVersion;
         Insert: Pick<IdeaVersion, "idea_id" | "title" | "description" | "current_level_at_pivot" | "pivot_reason">;
-        Update: never; // Versions are immutable
+        Update: never;
+        Relationships: [];
       };
       idea_collaborators: {
         Row: IdeaCollaborator;
@@ -204,7 +214,12 @@ export interface Database {
           expires_at?: string;
         };
         Update: Partial<Pick<IdeaCollaborator, "role" | "status" | "user_id" | "accepted_at" | "declined_at">>;
+        Relationships: [];
       };
     };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
 }

@@ -1,5 +1,5 @@
 /**
- * API Types for MuPoll
+ * API Types for debrief
  * Request/Response types for API routes
  */
 

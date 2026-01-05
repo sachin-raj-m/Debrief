@@ -11,11 +11,11 @@ import { useAuth } from "@/hooks";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, Suspense } from "react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
-export default function LoginPage() {
+function LoginContent() {
     const { isAuthenticated, loading, signInWithGoogle } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -165,5 +165,21 @@ export default function LoginPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+function LoginFallback() {
+    return (
+        <div className="flex h-screen w-full items-center justify-center bg-background">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent shadow-lg shadow-primary/20" />
+        </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<LoginFallback />}>
+            <LoginContent />
+        </Suspense>
     );
 }

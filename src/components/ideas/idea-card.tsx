@@ -20,8 +20,8 @@ interface IdeaCardProps {
         created_at: string;
         user_id: string;
         author?: {
-            full_name: string;
-            avatar_url?: string;
+            full_name: string | null;
+            avatar_url?: string | null;
         } | null;
         upvotes_count?: number;
         downvotes_count?: number;

@@ -21,7 +21,7 @@ interface InviteAcceptanceProps {
 
 export function InviteAcceptance({ token }: InviteAcceptanceProps) {
   const router = useRouter();
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { mutate: acceptInvite, isPending, isSuccess, isError, error, data } = useAcceptInvite();
 
   useEffect(() => {
