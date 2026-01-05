@@ -70,7 +70,7 @@ export function IdeaCard({ idea, variant = "glass" }: IdeaCardProps) {
                 <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#7877c6]/10 blur-[80px] transition-all duration-700 group-hover:bg-[#7877c6]/20" />
 
                 {/* Content Container */}
-                <div className="relative z-10 flex flex-1 flex-col p-6 md:p-8">
+                <div className="relative z-10 flex flex-1 flex-col p-5 md:p-8">
 
                     {/* Header: Author & Status */}
                     <div className="mb-6 flex items-start justify-between gap-4">
@@ -104,7 +104,7 @@ export function IdeaCard({ idea, variant = "glass" }: IdeaCardProps) {
 
                     {/* Body: Title & Excerpt */}
                     <div className="flex-1 space-y-3">
-                        <h3 className="font-heading text-2xl font-bold leading-tight text-foreground transition-colors group-hover:text-primary">
+                        <h3 className="font-heading text-xl md:text-2xl font-bold leading-tight text-foreground transition-colors group-hover:text-primary">
                             {idea.title}
                         </h3>
                         <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground/80 group-hover:text-muted-foreground/90 transition-colors">

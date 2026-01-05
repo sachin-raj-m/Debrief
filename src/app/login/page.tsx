@@ -44,12 +44,12 @@ function LoginContent() {
     }
 
     return (
-        <div className="relative min-h-screen w-full flex flex-col md:flex-row font-sans overflow-hidden bg-background text-foreground selection:bg-primary/20">
+        <div className="relative min-h-screen w-full flex flex-col lg:flex-row font-sans overflow-hidden bg-background text-foreground selection:bg-primary/20">
             {/* Global Ambient Background */}
             <div className="absolute inset-0 pointer-events-none z-0 bg-page-gradient" />
 
             {/* Left Side: Visual Showcase */}
-            <div className="relative flex-1 flex flex-col items-center justify-center p-6 lg:p-12 z-10 w-full overflow-hidden">
+            <div className="hidden lg:flex relative flex-1 flex-col items-center justify-center p-6 lg:p-12 z-10 w-full overflow-hidden">
 
                 {/* Visual Content Container */}
                 <div className="relative z-20 w-full max-w-2xl mx-auto flex flex-col items-center">
@@ -110,7 +110,7 @@ function LoginContent() {
             </div>
 
             {/* Right Side: Login Form */}
-            <div className="relative z-30 w-full md:w-[480px] lg:w-[600px] shrink-0 flex flex-col justify-center items-center bg-zinc-900/30 backdrop-blur-3xl border-l border-white/5 md:min-h-screen p-8 md:p-16 shadow-2xl shadow-black/50">
+            <div className="relative z-30 w-full lg:w-[600px] shrink-0 flex flex-col justify-center items-center bg-background/80 lg:bg-zinc-900/30 backdrop-blur-3xl border-t lg:border-t-0 lg:border-l border-white/5 min-h-screen p-8 lg:p-16 shadow-2xl shadow-black/50">
                 <div className="w-full max-w-sm space-y-8 animate-fade-in">
 
                     {/* Header */}

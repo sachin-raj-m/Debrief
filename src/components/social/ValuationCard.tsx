@@ -45,12 +45,12 @@ export function ValuationCard({ ideaId }: ValuationCardProps) {
             <div className="relative z-10 p-6 md:p-8">
                 {/* Header Section */}
                 <div className="mb-6">
-                    <div className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                    <div className="mb-2 flex items-center gap-2 text-xs md:text-sm font-bold uppercase tracking-wider text-muted-foreground">
                         <TrendingUp className="h-4 w-4" />
                         <span>Implied Valuation</span>
                     </div>
                     <div className="flex items-baseline gap-2">
-                        <span className="font-heading text-4xl font-bold tracking-tight text-white md:text-5xl">
+                        <span className="font-heading text-3xl font-bold tracking-tight text-white md:text-4xl lg:text-5xl">
                             {formattedValuation}
                         </span>
                         <span className="text-sm font-medium text-muted-foreground">

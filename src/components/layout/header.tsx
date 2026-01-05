@@ -13,8 +13,8 @@ import { cn } from "@/lib/utils";
 
 export function Header() {
     return (
-        <header className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4 md:top-6 pointer-events-none">
-            <div className="pointer-events-auto group relative flex h-14 w-full max-w-4xl items-center justify-between rounded-full border border-white/5 bg-black/40 px-5 shadow-lg shadow-black/10 backdrop-blur-2xl transition-all duration-500 hover:border-white/10 hover:bg-black/50 hover:shadow-black/20 md:px-6">
+        <header className="fixed top-2 md:top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
+            <div className="pointer-events-auto group relative flex h-14 w-full max-w-4xl items-center justify-between rounded-full border border-white/5 bg-black/40 px-3 md:px-6 shadow-lg shadow-black/10 backdrop-blur-2xl transition-all duration-500 hover:border-white/10 hover:bg-black/50 hover:shadow-black/20">
 
                 {/* Gradient Shine Effect on Hover */}
                 <div className="absolute inset-0 -z-10 rounded-full bg-linear-to-r from-transparent via-white/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />

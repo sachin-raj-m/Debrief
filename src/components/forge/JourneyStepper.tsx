@@ -23,9 +23,9 @@ export function JourneyStepper({ currentLevel, selectedLevel, onSelectLevel, cla
 
     return (
         <div className={cn("w-full rounded-3xl border border-white/5 bg-black/20 p-6 backdrop-blur-sm", className)}>
-            <div className="relative flex items-start justify-between">
+            <div className="relative flex items-start overflow-x-auto pb-4 md:pb-0 md:overflow-visible gap-8 md:gap-0 md:justify-between no-scrollbar">
                 {/* Background Line */}
-                <div className="absolute left-0 top-5 h-0.5 w-full -translate-y-1/2 bg-white/5" />
+                <div className="hidden md:block absolute left-0 top-5 h-0.5 w-full -translate-y-1/2 bg-white/5" />
 
                 {steps.map((step, index) => {
                     const isCompleted = index < currentLevel;
@@ -34,10 +34,10 @@ export function JourneyStepper({ currentLevel, selectedLevel, onSelectLevel, cla
                     const isSelected = step.level === selectedLevel;
 
                     return (
-                        <div key={step.level} className="relative flex flex-1 flex-col items-center">
+                        <div key={step.level} className="relative flex flex-col items-center min-w-[80px] md:min-w-0 md:flex-1">
                             {/* Active Line Progress (overlaid on background line) */}
                             {index < steps.length - 1 && (index < currentLevel) && (
-                                <div className="absolute left-[50%] top-5 h-0.5 w-full -translate-y-1/2 bg-primary/50" />
+                                <div className="hidden md:block absolute left-[50%] top-5 h-0.5 w-full -translate-y-1/2 bg-primary/50" />
                             )}
 
                             <button
