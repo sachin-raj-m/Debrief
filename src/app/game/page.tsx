@@ -34,7 +34,7 @@ export default function GameLobby() {
                 </div>
 
                 <div className="flex justify-center w-full mt-12">
-                    <Card className="w-full max-w-md glass-panel border-white/10 hover:border-white/20 transition-all duration-300 group flex flex-col">
+                    <Card variant="glass" className="w-full max-w-md group flex flex-col">
                         <CardHeader>
                             <div className="mx-auto w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                 <Users className="w-6 h-6 text-foreground" />
@@ -52,7 +52,7 @@ export default function GameLobby() {
                                     value={gameIdInput}
                                     onChange={(e) => setGameIdInput(e.target.value)}
                                 />
-                                <Button onClick={handleJoinGame} className="bg-white text-black hover:bg-white/90 font-sans">
+                                <Button onClick={handleJoinGame} variant="default" className="font-sans">
                                     Join
                                 </Button>
                             </div>

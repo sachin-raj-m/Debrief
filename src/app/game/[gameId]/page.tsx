@@ -16,10 +16,11 @@ export default async function GamePage({ params }: { params: Promise<{ gameId: s
 
     if (gameError || !game) {
         return (
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+            <div className="min-h-screen bg-background flex items-center justify-center text-foreground relative">
+                <div className="fixed inset-0 z-[-1] bg-page-gradient pointer-events-none" />
                 <div className="text-center">
-                    <h1 className="text-4xl font-bold mb-4">Game Not Found</h1>
-                    <p className="text-slate-400">The game ID you entered does not exist.</p>
+                    <h1 className="text-4xl font-heading font-bold mb-4">Game Not Found</h1>
+                    <p className="text-muted-foreground">The game ID you entered does not exist.</p>
                 </div>
             </div>
         )
@@ -35,7 +36,7 @@ export default async function GamePage({ params }: { params: Promise<{ gameId: s
     const { data: userTeam } = await supabase
         .from('sim_teams')
         .select('*')
-        .eq('game_id', gameId)
+        .eq('game_id', game.id)
         .contains('members', [user.id])
         .single()
 

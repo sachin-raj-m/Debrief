@@ -28,14 +28,16 @@ export default function AdminGamePage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 font-sans">
-            <Card className="w-full max-w-md glass-panel border-white/10 bg-black/40">
+        <div className="min-h-screen bg-background flex items-center justify-center p-4 font-sans max-w-[1600px] mx-auto text-foreground relative">
+            <div className="fixed inset-0 z-[-1] bg-page-gradient pointer-events-none" />
+
+            <Card variant="glass" className="w-full max-w-md">
                 <CardHeader className="text-center">
                     <div className="mx-auto w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mb-4">
                         <ShieldAlert className="w-6 h-6 text-red-500" />
                     </div>
-                    <CardTitle className="text-2xl font-heading text-white">Admin Console</CardTitle>
-                    <CardDescription className="text-slate-400">
+                    <CardTitle className="text-2xl font-heading text-foreground">Admin Console</CardTitle>
+                    <CardDescription className="text-muted-foreground">
                         Create and manage Growth Strategy Lab simulations.
                     </CardDescription>
                 </CardHeader>
@@ -43,7 +45,8 @@ export default function AdminGamePage() {
                     <Button
                         onClick={handleCreateGame}
                         disabled={isCreating}
-                        className="w-full h-12 text-lg bg-white text-black hover:bg-white/90"
+                        variant="default"
+                        className="w-full h-12 text-lg"
                     >
                         {isCreating ? 'Creating...' : (
                             <div className="flex items-center gap-2">
@@ -51,7 +54,7 @@ export default function AdminGamePage() {
                             </div>
                         )}
                     </Button>
-                    <p className="text-xs text-center text-slate-500">
+                    <p className="text-xs text-center text-muted-foreground">
                         Only authorized admin emails can perform this action.
                     </p>
                 </CardContent>

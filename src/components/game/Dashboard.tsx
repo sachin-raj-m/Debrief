@@ -182,29 +182,31 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
 
     if (game.status === 'completed') {
         return (
-            <div className="min-h-screen p-6 flex flex-col items-center justify-center">
+            <div className="min-h-screen p-6 flex flex-col items-center justify-center relative bg-background">
+                <div className="fixed inset-0 z-[-1] bg-page-gradient pointer-events-none" />
                 <h1 className="text-4xl font-heading font-bold text-foreground mb-8">
                     Game Over!
                 </h1>
                 <div className="w-full max-w-2xl">
                     <Leaderboard teams={teams} />
                 </div>
-                <Button onClick={() => router.push('/game')} className="mt-8 bg-white text-black hover:bg-white/90">Back to Lobby</Button>
+                <Button onClick={() => router.push('/game')} className="mt-8" variant="default">Back to Lobby</Button>
             </div>
         )
     }
 
     if (game.status === 'waiting') {
         return (
-            <div className="min-h-screen p-6 flex flex-col items-center justify-center space-y-8">
+            <div className="min-h-screen p-6 flex flex-col items-center justify-center space-y-8 relative bg-background">
+                <div className="fixed inset-0 z-[-1] bg-page-gradient pointer-events-none" />
                 <div className="text-center space-y-4">
                     <h1 className="text-4xl md:text-5xl font-heading font-bold text-foreground">Waiting for Players...</h1>
                     <p className="text-muted-foreground font-sans text-lg">
-                        Share Game ID: <span className="font-mono text-white bg-white/10 px-2 py-1 rounded">{game.id}</span>
+                        Share Game ID: <span className="font-mono text-foreground bg-white/10 px-2 py-1 rounded">{game.code}</span>
                     </p>
                 </div>
 
-                <Card className="w-full max-w-md glass-panel border-white/10">
+                <Card variant="glass" className="w-full max-w-md">
                     <CardHeader>
                         <CardTitle className="flex justify-between items-center text-foreground font-heading">
                             <span>Joined Teams</span>
@@ -238,7 +240,8 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                         <Button
                             onClick={handleStartGame}
                             disabled={isSubmitting}
-                            className="bg-white text-black hover:bg-white/90 font-sans px-8 py-6 text-lg"
+                            variant="default"
+                            className="px-8 py-6 text-lg"
                         >
                             {isSubmitting ? 'Starting...' : 'Start Game Now'}
                         </Button>
@@ -249,16 +252,17 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 p-4 font-sans text-slate-100 pb-24">
+        <div className="min-h-screen bg-background p-4 font-sans text-foreground pb-24 relative">
+            <div className="fixed inset-0 z-[-1] bg-page-gradient pointer-events-none" />
 
             {/* --- Top Bar --- */}
             <div className="max-w-7xl mx-auto mb-6 grid gap-4 md:grid-cols-3">
                 {/* Round Info */}
-                <Card className="bg-slate-900/50 border-slate-800">
+                <Card variant="glass">
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
-                            <div className="text-sm text-slate-400 uppercase tracking-wider font-bold">Round</div>
-                            <div className="text-3xl font-mono text-white">{game.current_round + 1} <span className="text-slate-500 text-lg">/ {MAX_ROUNDS}</span></div>
+                            <div className="text-sm text-muted-foreground uppercase tracking-wider font-bold">Round</div>
+                            <div className="text-3xl font-mono text-foreground">{game.current_round + 1} <span className="text-muted-foreground text-lg">/ {MAX_ROUNDS}</span></div>
                         </div>
                         <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center">
                             <Clock className="text-blue-400" />
@@ -267,14 +271,14 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                 </Card>
 
                 {/* Global Budget Pool */}
-                <Card className="bg-slate-900/50 border-slate-800 md:col-span-2">
+                <Card variant="glass" className="md:col-span-2">
                     <CardContent className="p-4">
                         <div className="flex justify-between mb-2">
-                            <span className="text-sm text-slate-400 font-bold uppercase tracking-wider">Market Budget Pool</span>
+                            <span className="text-sm text-muted-foreground font-bold uppercase tracking-wider">Market Budget Pool</span>
                             <span className="text-sm font-mono text-green-400">₹{(budgetLeftGlobal / 100000).toFixed(2)} Lakhs Remaining</span>
                         </div>
-                        <Progress value={budgetPercent} className="h-4 bg-slate-800" indicatorClassName={budgetPercent < 20 ? 'bg-red-500' : 'bg-green-500'} />
-                        <div className="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                        <Progress value={budgetPercent} className="h-4 bg-white/5" indicatorClassName={budgetPercent < 20 ? 'bg-red-500' : 'bg-green-500'} />
+                        <div className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
                             <AlertTriangle className="w-3 h-3" />
                             If this hits ₹0, the game ends immediately for everyone.
                         </div>
@@ -293,22 +297,22 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                                 const isMaxed = currentSpend > channel.max_spend_per_round
 
                                 return (
-                                    <Card key={channel.id} className={`bg-slate-900 border-slate-800 transition-colors ${hasSubmitted ? 'opacity-50 pointer-events-none' : ''}`}>
+                                    <Card key={channel.id} variant="glass" className={`transition-colors ${hasSubmitted ? 'opacity-50 pointer-events-none' : ''}`}>
                                         <CardHeader className="p-4 pb-2">
                                             <div className="flex justify-between items-start">
-                                                <div className="font-bold text-white">{channel.name}</div>
-                                                <Badge variant="outline" className="text-xs bg-slate-950 text-slate-400 border-slate-700">
+                                                <div className="font-bold text-foreground">{channel.name}</div>
+                                                <Badge variant="outline" className="text-xs bg-black/20 text-muted-foreground border-white/10">
                                                     Max: ₹{channel.max_spend_per_round / 100000}L
                                                 </Badge>
                                             </div>
-                                            <CardDescription className="text-xs text-slate-400 h-8 line-clamp-2">
+                                            <CardDescription className="text-xs text-muted-foreground h-8 line-clamp-2">
                                                 {channel.description}
                                             </CardDescription>
                                         </CardHeader>
                                         <CardContent className="p-4 pt-2 space-y-3">
                                             <div className="flex justify-between text-sm">
-                                                <span className="text-slate-500">Cost/1k: ₹{channel.cost_per_1k}</span>
-                                                <span className={`${currentSpend > 0 ? 'text-green-400' : 'text-slate-600'} font-mono`}>
+                                                <span className="text-muted-foreground">Cost/1k: ₹{channel.cost_per_1k}</span>
+                                                <span className={`${currentSpend > 0 ? 'text-green-400' : 'text-muted-foreground'} font-mono`}>
                                                     ₹{(currentSpend).toLocaleString()}
                                                 </span>
                                             </div>
@@ -357,12 +361,12 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                             <CardContent>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <div className="text-xs text-slate-400">Planned Spend</div>
-                                        <div className="text-xl font-mono text-white">₹{(getTotalPlannedSpend() / 100000).toFixed(1)}L</div>
+                                        <div className="text-xs text-muted-foreground">Planned Spend</div>
+                                        <div className="text-xl font-mono text-foreground">₹{(getTotalPlannedSpend() / 100000).toFixed(1)}L</div>
                                     </div>
                                     <div>
-                                        <div className="text-xs text-slate-400">Total Downloads</div>
-                                        <div className="text-xl font-mono text-white">{Math.floor(initialTeam.total_downloads).toLocaleString()}</div>
+                                        <div className="text-xs text-muted-foreground">Total Downloads</div>
+                                        <div className="text-xl font-mono text-foreground">{Math.floor(initialTeam.total_downloads).toLocaleString()}</div>
                                     </div>
                                 </div>
                             </CardContent>
@@ -390,15 +394,15 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
 
             {/* --- Sticky Footer Action --- */}
             {isPlayer && (
-                <div className="fixed bottom-0 left-0 w-full bg-slate-950/80 backdrop-blur-md border-t border-slate-800 p-4">
+                <div className="fixed bottom-0 left-0 w-full bg-background/80 backdrop-blur-md border-t border-white/10 p-4">
                     <div className="max-w-7xl mx-auto flex items-center justify-between">
-                        <div className="text-slate-400 text-sm hidden md:block">
+                        <div className="text-muted-foreground text-sm hidden md:block">
                             Adjust sliders above to allocate your budget.
                         </div>
                         <div className="flex gap-4 items-center w-full md:w-auto">
                             <div className="text-right mr-4">
-                                <div className="text-xs text-slate-500">Round Allocation</div>
-                                <div className={`font-mono font-bold ${getTotalPlannedSpend() > budgetLeftGlobal ? 'text-red-500' : 'text-white'}`}>
+                                <div className="text-xs text-muted-foreground">Round Allocation</div>
+                                <div className={`font-mono font-bold ${getTotalPlannedSpend() > budgetLeftGlobal ? 'text-red-500' : 'text-foreground'}`}>
                                     ₹{(getTotalPlannedSpend() / 100000).toFixed(2)}L
                                 </div>
                             </div>
@@ -406,7 +410,8 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                                 size="lg"
                                 onClick={handleSubmit}
                                 disabled={isSubmitting || hasSubmitted || getTotalPlannedSpend() === 0}
-                                className={`w-full md:w-auto ${hasSubmitted ? 'bg-green-600 hover:bg-green-600' : 'bg-blue-600 hover:bg-blue-500'}`}
+                                className={`w-full md:w-auto ${hasSubmitted ? 'bg-green-600 hover:bg-green-600' : ''}`}
+                                variant={hasSubmitted ? "default" : "default"} // Use default for submit, or maybe brand color
                             >
                                 {hasSubmitted ? 'Submitted (Waiting)' : 'Submit Bids'}
                             </Button>
