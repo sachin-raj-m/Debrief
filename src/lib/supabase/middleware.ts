@@ -64,7 +64,7 @@ export async function updateSession(request: NextRequest) {
 }
 
 // Protected routes that require authentication
-const protectedRoutes = ["/ideas/new", "/profile"];
+const protectedRoutes = ["/ideas/new", "/profile", "/admin"];
 
 // Auth routes that should redirect to home if already logged in
 const authRoutes = ["/login"];
@@ -110,6 +110,20 @@ export async function authMiddleware(request: NextRequest) {
       url.pathname = "/login";
       url.searchParams.set("redirectTo", pathname);
       return NextResponse.redirect(url);
+    }
+
+    // Role-based protection: Admin
+    if (pathname.startsWith("/admin") && user) {
+       // Hardcoded admin check to match client-side logic
+       // Ideally this matches constants.ts but for safety in edge runtime we can duplicate or ensure import works
+       // Importing constants.ts should work if it has no node-dependencies
+       const ADMIN_EMAILS = ["sachin@mulearn.org", "admin@debrief.com", "awindsr@gmail.com"];
+       
+       if (!user.email || !ADMIN_EMAILS.includes(user.email)) {
+          const url = request.nextUrl.clone();
+          url.pathname = "/"; // Redirect unauthorized access to home
+          return NextResponse.redirect(url);
+       }
     }
 
     // Redirect authenticated users from auth routes
