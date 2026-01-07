@@ -456,13 +456,27 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                                                     ₹{(currentSpend).toLocaleString()}
                                                 </span>
                                             </div>
-                                            <Slider
-                                                value={[currentSpend]}
-                                                max={channel.max_spend_per_round}
-                                                step={100000}
-                                                onValueChange={(val: number[]) => handleInputChange(channel.id, val[0])}
-                                                className="py-2"
-                                            />
+                                            <div className="flex items-center gap-4 py-2">
+                                                <Slider
+                                                    value={[currentSpend]}
+                                                    max={channel.max_spend_per_round}
+                                                    step={10000} // Finer control
+                                                    onValueChange={(val: number[]) => handleInputChange(channel.id, val[0])}
+                                                    className="flex-1"
+                                                />
+                                                <Input
+                                                    type="number"
+                                                    className="w-24 h-8 bg-black/40 border-white/10 font-mono text-xs text-right"
+                                                    value={currentSpend}
+                                                    onChange={(e) => {
+                                                        const val = parseInt(e.target.value) || 0
+                                                        // Clamp to max
+                                                        const clamped = Math.min(val, channel.max_spend_per_round)
+                                                        handleInputChange(channel.id, clamped)
+                                                    }}
+                                                    max={channel.max_spend_per_round}
+                                                />
+                                            </div>
                                             {channel.efficiency_trend === 'decreasing' && (
                                                 <div className="flex items-center gap-1 text-[10px] text-red-400">
                                                     <TrendingDown className="w-3 h-3" /> Efficiency drops over time
@@ -498,15 +512,27 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                                 </div>
 
                                 <div className="space-y-2">
-                                    <div className="text-sm text-muted-foreground">Team Status:</div>
+                                    <div className="text-xs text-muted-foreground flex justify-between px-2 uppercase tracking-wider font-bold">
+                                        <span>Team Status</span>
+                                        <div className="flex gap-4">
+                                            <span className="w-20 text-right">Spent</span>
+                                            <span className="w-24 text-right">DLs</span>
+                                        </div>
+                                    </div>
                                     {teams.map(team => (
-                                        <div key={team.id} className="flex items-center justify-between p-2 rounded bg-white/5">
-                                            <span className="text-foreground">{team.name}</span>
-                                            {submittedTeamIds.includes(team.id) ? (
-                                                <Badge className="bg-green-500/20 text-green-400">Submitted</Badge>
-                                            ) : (
-                                                <Badge className="bg-yellow-500/20 text-yellow-400">Waiting...</Badge>
-                                            )}
+                                        <div key={team.id} className="flex items-center justify-between p-2 rounded bg-white/5 text-sm border-l-2 border-transparent hover:bg-white/10 transition-colors">
+                                            <div className="flex items-center gap-2">
+                                                {submittedTeamIds.includes(team.id) ? (
+                                                    <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" title="Submitted" />
+                                                ) : (
+                                                    <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" title="Waiting" />
+                                                )}
+                                                <span className="text-foreground font-medium">{team.name}</span>
+                                            </div>
+                                            <div className="flex gap-4 text-xs font-mono items-center">
+                                                <span className="w-20 text-right text-muted-foreground">₹{(team.total_spent / 100000).toFixed(1)}L</span>
+                                                <span className="w-24 text-right text-foreground font-bold">{Math.floor(team.total_downloads).toLocaleString()}</span>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
