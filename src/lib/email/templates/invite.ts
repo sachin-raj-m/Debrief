@@ -1,11 +1,12 @@
 /**
  * Invite Email Template
  * 
- * Professional HTML email template for team collaboration invitations.
+ * Modern vibrant blue email template for team collaboration invitations.
  * Includes responsive design and plain text fallback.
  */
 
 import { publicEnv } from "@/lib/env.server";
+import { COLORS, TYPOGRAPHY, escapeHtml, generateEmailBase, generateFooter, generateButton, generateCard } from "./base";
 
 export interface InviteEmailData {
   recipientEmail: string;
@@ -22,9 +23,9 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const ROLE_DESCRIPTIONS: Record<string, string> = {
-  viewer: "View the idea and track all progress",
-  editor: "View and edit the idea, levels, and provide feedback",
-  admin: "Full access including managing team members",
+  viewer: "View the idea and track progress",
+  editor: "Edit the idea and provide feedback",
+  admin: "Full access including team management",
 };
 
 /**
@@ -42,147 +43,98 @@ export function generateInviteEmailHtml(data: InviteEmailData): string {
   const roleLabel = ROLE_LABELS[data.role] || data.role;
   const roleDescription = ROLE_DESCRIPTIONS[data.role] || "";
 
-  return `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>You're invited to collaborate</title>
-  <!--[if mso]>
-  <noscript>
-    <xml>
-      <o:OfficeDocumentSettings>
-        <o:PixelsPerInch>96</o:PixelsPerInch>
-      </o:OfficeDocumentSettings>
-    </xml>
-  </noscript>
-  <![endif]-->
-</head>
-<body style="margin: 0; padding: 0; background-color: #0a0a0a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0a0a0a;">
-    <tr>
-      <td align="center" style="padding: 40px 20px;">
-        <!-- Main Container -->
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 520px; background-color: #111111; border-radius: 16px; border: 1px solid #222222;">
-          <tr>
-            <td style="padding: 48px 40px;">
-              <!-- Logo/Header -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td align="center" style="padding-bottom: 32px;">
-                    <div style="display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); width: 56px; height: 56px; border-radius: 14px; line-height: 56px; text-align: center;">
-                      <span style="color: white; font-size: 24px; font-weight: bold;">D</span>
-                    </div>
-                  </td>
-                </tr>
-              </table>
+  const content = `
+<!-- Main Container -->
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 520px;">
+  <tr>
+    <td style="padding: 20px;">
+      <!-- Header Text -->
+      <p style="margin: 0 0 8px 0; color: ${COLORS.textPrimary}; font-size: 14px; font-weight: 400; line-height: 1.4;">
+        HEY,
+      </p>
+      <p style="margin: 0 0 32px 0; color: ${COLORS.textPrimary}; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.5;">
+        ${escapeHtml(data.inviterName.toUpperCase())} HAS INVITED YOU TO COLLABORATE ON AN IDEA:
+      </p>
 
-              <!-- Invitation Header -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td align="center" style="padding-bottom: 24px;">
-                    <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 600; line-height: 1.3;">
-                      You're invited to collaborate!
-                    </h1>
-                  </td>
-                </tr>
-              </table>
+      <!-- Idea Card -->
+      <table role="presentation" cellspacing="0" cellpadding="0" style="width: 100%; background-color: ${COLORS.bgCard}; border-radius: 16px; margin-bottom: 32px;">
+        <tr>
+          <td style="padding: 32px;">
+            <!-- Idea Number/Indicator -->
+            <p style="margin: 0 0 8px 0; color: ${COLORS.textMuted}; font-size: 32px; font-weight: 300; font-family: monospace;">
+              //01
+            </p>
+            <!-- Idea Title -->
+            <h1 style="margin: 0 0 16px 0; color: ${COLORS.textPrimary}; font-size: 28px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.2;">
+              ${escapeHtml(data.ideaTitle)}
+            </h1>
+            <!-- Role Info -->
+            <table role="presentation" cellspacing="0" cellpadding="0">
+              <tr>
+                <td style="padding-right: 24px;">
+                  <p style="margin: 0 0 4px 0; color: ${COLORS.textMuted}; font-size: 10px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.1em;">
+                    YOUR ROLE
+                  </p>
+                  <p style="margin: 0; color: ${COLORS.textPrimary}; font-size: 13px; font-weight: 600;">
+                    ${roleLabel}
+                  </p>
+                </td>
+                <td>
+                  <p style="margin: 0 0 4px 0; color: ${COLORS.textMuted}; font-size: 10px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.1em;">
+                    ACCESS
+                  </p>
+                  <p style="margin: 0; color: ${COLORS.textPrimary}; font-size: 13px; font-weight: 600;">
+                    ${roleDescription}
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
 
-              <!-- Invitation Body -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td style="padding-bottom: 32px;">
-                    <p style="margin: 0 0 16px 0; color: #a1a1a1; font-size: 16px; line-height: 1.6; text-align: center;">
-                      <strong style="color: #ffffff;">${escapeHtml(data.inviterName)}</strong> has invited you to join
-                    </p>
-                    <p style="margin: 0; color: #ffffff; font-size: 20px; font-weight: 600; line-height: 1.4; text-align: center;">
-                      "${escapeHtml(data.ideaTitle)}"
-                    </p>
-                  </td>
-                </tr>
-              </table>
+      <!-- Description Text -->
+      <p style="margin: 0 0 24px 0; color: ${COLORS.textPrimary}; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.6;">
+        CLICK THE BUTTON BELOW TO JOIN THE TEAM AND START COLLABORATING. YOU'LL GET ACCESS TO ALL THE DETAILS INSTANTLY.
+      </p>
 
-              <!-- Role Badge -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td align="center" style="padding-bottom: 32px;">
-                    <table role="presentation" cellspacing="0" cellpadding="0">
-                      <tr>
-                        <td style="background-color: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 12px; padding: 16px 24px;">
-                          <p style="margin: 0 0 4px 0; color: #a855f7; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-                            Your Role
-                          </p>
-                          <p style="margin: 0 0 4px 0; color: #ffffff; font-size: 18px; font-weight: 600;">
-                            ${roleLabel}
-                          </p>
-                          <p style="margin: 0; color: #a1a1a1; font-size: 14px;">
-                            ${roleDescription}
-                          </p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
+      <!-- CTA Button -->
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+        <tr>
+          <td style="padding: 8px 0 32px 0;">
+            <a href="${inviteUrl}" style="display: inline-block; background-color: ${COLORS.textPrimary}; color: ${COLORS.bgPrimary}; text-decoration: none; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding: 16px 40px; border-radius: 6px;">
+              Accept Invitation
+            </a>
+          </td>
+        </tr>
+      </table>
 
-              <!-- CTA Button -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td align="center" style="padding-bottom: 32px;">
-                    <a href="${inviteUrl}" style="display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; padding: 16px 48px; border-radius: 12px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);">
-                      Accept Invitation
-                    </a>
-                  </td>
-                </tr>
-              </table>
+      <!-- Expiry Notice -->
+      <p style="margin: 0 0 16px 0; color: ${COLORS.textSecondary}; font-size: 12px; line-height: 1.5;">
+        This invitation expires in 7 days. If you didn't expect this, just ignore it.
+      </p>
 
-              <!-- Expiry Notice -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td align="center" style="padding-bottom: 24px;">
-                    <p style="margin: 0; color: #666666; font-size: 13px; line-height: 1.5;">
-                      This invitation expires in 7 days.
-                    </p>
-                  </td>
-                </tr>
-              </table>
+      <!-- Divider -->
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-top: 1px solid ${COLORS.border}; margin-top: 24px;">
+        <tr>
+          <td style="padding-top: 24px;">
+            <p style="margin: 0 0 8px 0; color: ${COLORS.textMuted}; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">
+              CAN'T CLICK THE BUTTON?
+            </p>
+            <p style="margin: 0; color: ${COLORS.textSecondary}; font-size: 12px; line-height: 1.5; word-break: break-all;">
+              ${inviteUrl}
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
 
-              <!-- Divider -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td style="border-top: 1px solid #222222; padding-top: 24px;">
-                    <p style="margin: 0 0 8px 0; color: #666666; font-size: 12px; line-height: 1.5; text-align: center;">
-                      If the button doesn't work, copy and paste this link:
-                    </p>
-                    <p style="margin: 0; color: #a855f7; font-size: 12px; line-height: 1.5; text-align: center; word-break: break-all;">
-                      ${inviteUrl}
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
+${generateFooter("You received this because someone invited you to collaborate on Debrief.")}
+`;
 
-        <!-- Footer -->
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 520px;">
-          <tr>
-            <td style="padding: 24px 20px;">
-              <p style="margin: 0; color: #444444; font-size: 12px; line-height: 1.5; text-align: center;">
-                You received this email because someone invited you to collaborate on Debrief.<br>
-                If you didn't expect this invitation, you can safely ignore this email.
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-`.trim();
+  return generateEmailBase(content, "You're invited to collaborate");
 }
 
 /**
@@ -194,34 +146,21 @@ export function generateInviteEmailText(data: InviteEmailData): string {
   const roleDescription = ROLE_DESCRIPTIONS[data.role] || "";
 
   return `
-You're invited to collaborate!
+HEY,
 
-${data.inviterName} has invited you to join "${data.ideaTitle}"
+${data.inviterName.toUpperCase()} HAS INVITED YOU TO COLLABORATE ON AN IDEA:
+
+"${data.ideaTitle}"
 
 Your Role: ${roleLabel}
-${roleDescription}
+Access: ${roleDescription}
 
-Accept this invitation by visiting:
-${inviteUrl}
+Click here to accept: ${inviteUrl}
 
 This invitation expires in 7 days.
 
 ---
-You received this email because someone invited you to collaborate on Debrief.
-If you didn't expect this invitation, you can safely ignore this email.
+You received this because someone invited you to collaborate on Debrief.
 `.trim();
 }
 
-/**
- * Escape HTML special characters
- */
-function escapeHtml(text: string): string {
-  const htmlEscapes: Record<string, string> = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;",
-  };
-  return text.replace(/[&<>"']/g, (char) => htmlEscapes[char] || char);
-}
