@@ -35,7 +35,7 @@ const ChannelCard = memo(({ channel, currentSpend, onInputChange, isSubmitted }:
                 <div className="flex justify-between items-start">
                     <div className="font-bold text-foreground">{channel.name}</div>
                     <Badge variant="outline" className="text-xs bg-black/20 text-muted-foreground border-white/10">
-                        Max: ₹{channel.max_spend_per_round / 100000}L
+                        Limit: ₹{(channel.max_spend_per_round / 100000).toFixed(1)}L
                     </Badge>
                 </div>
                 <CardDescription className="text-xs text-muted-foreground h-8 line-clamp-2">
@@ -288,6 +288,31 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
     const getTotalPlannedSpend = () => {
         return Object.values(inputs).reduce((a, b) => a + b, 0)
     }
+
+    const getSpendingNudge = () => {
+        const total = getTotalPlannedSpend()
+        if (total === 0) return null
+
+        // 1. Aggressive Spend in Early Rounds
+        if (game.current_round < 2 && total > 1000000) { // > 10L in Round 1-2
+            return { type: 'warning', msg: "High Spend Warning: You're spending over ₹10L early. Consider saving budget for later rounds!" }
+        }
+
+        // 2. Diversification Check
+        const maxSingleChannel = Math.max(...Object.values(inputs))
+        if (total > 500000 && maxSingleChannel > total * 0.8) { // > 5L total and >80% in one channel
+            return { type: 'info', msg: "Diversification Tip: You're betting heavily on one channel. Spreading risk might be safer." }
+        }
+
+        // 3. Late Game Push
+        if (game.current_round >= 4 && total < 200000) {
+            return { type: 'info', msg: "It's the final stretch! Don't be afraid to spend your remaining budget." }
+        }
+
+        return null
+    }
+
+    const nudge = getSpendingNudge()
 
     const handleSubmit = async () => {
         if (!initialTeam) return
@@ -626,12 +651,19 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                 <div className="fixed bottom-0 left-0 w-full bg-background/95 backdrop-blur-md border-t border-white/10 p-4 z-50">
                     <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
                         <div className="text-muted-foreground text-sm hidden md:block">
-                            Adjust sliders above to allocate your budget.
+                            {nudge ? (
+                                <div className={`flex items-center gap-2 ${nudge.type === 'warning' ? 'text-orange-400' : 'text-blue-400'}`}>
+                                    <AlertTriangle className="w-4 h-4" />
+                                    <span className="font-bold">{nudge.msg}</span>
+                                </div>
+                            ) : (
+                                <span><span className="text-yellow-500 font-bold">Strategy Tip:</span> You have ₹30L total. Build up round-by-round!</span>
+                            )}
                         </div>
                         <div className="flex flex-col md:flex-row gap-3 md:gap-4 items-stretch md:items-center w-full md:w-auto">
                             <div className="flex justify-between md:block items-center">
                                 <div className="text-xs text-muted-foreground md:text-right md:mr-4">
-                                    Allocation / <span className="text-foreground font-bold">₹{((MAX_TEAM_TOTAL_BUDGET - Number(initialTeam?.total_spent || 0)) / 100000).toFixed(1)}L Left</span>
+                                    Allocation / <span className="text-foreground font-bold">₹{((MAX_TEAM_TOTAL_BUDGET - Number(initialTeam?.total_spent || 0)) / 100000).toFixed(1)}L Left (Game Total)</span>
                                 </div>
                                 <div className={`font-mono font-bold md:text-right md:mr-4 ${getTotalPlannedSpend() > (MAX_TEAM_TOTAL_BUDGET - Number(initialTeam?.total_spent || 0)) ? 'text-red-500 animate-pulse' : 'text-foreground'}`}>
                                     ₹{(getTotalPlannedSpend() / 100000).toFixed(2)}L
