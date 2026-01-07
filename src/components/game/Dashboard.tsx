@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, memo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { SimDecision, SimGame, SimTeam, SimResult } from "@/types/simulation"
-import { CHANNELS, TOTAL_BUDGET_POOL, MAX_ROUNDS } from '@/lib/simulation-game/constants'
+import { CHANNELS, TOTAL_BUDGET_POOL, MAX_ROUNDS, MAX_TEAM_TOTAL_BUDGET } from '@/lib/simulation-game/constants'
 import { submitDecision, processRound, startGame } from '@/app/actions/game-actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -291,6 +291,14 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
 
     const handleSubmit = async () => {
         if (!initialTeam) return
+
+        const totalSpent = Number(initialTeam.total_spent || 0)
+        const budgetLeftForTeam = MAX_TEAM_TOTAL_BUDGET - totalSpent
+
+        if (getTotalPlannedSpend() > budgetLeftForTeam) {
+            toast.error("Budget Limit Exceeded", { description: `You only have ₹${(budgetLeftForTeam / 100000).toFixed(2)}L remaining for the entire game.` })
+            return
+        }
         try {
             setIsSubmitting(true)
             await submitDecision(game.id, initialTeam.id, game.current_round, inputs)
@@ -632,19 +640,21 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                         </div>
                         <div className="flex flex-col md:flex-row gap-3 md:gap-4 items-stretch md:items-center w-full md:w-auto">
                             <div className="flex justify-between md:block items-center">
-                                <div className="text-xs text-muted-foreground md:text-right md:mr-4">Round Allocation</div>
-                                <div className={`font-mono font-bold md:text-right md:mr-4 ${getTotalPlannedSpend() > budgetLeftGlobal ? 'text-red-500' : 'text-foreground'}`}>
+                                <div className="text-xs text-muted-foreground md:text-right md:mr-4">
+                                    Allocation / <span className="text-foreground font-bold">₹{((MAX_TEAM_TOTAL_BUDGET - Number(initialTeam?.total_spent || 0)) / 100000).toFixed(1)}L Left</span>
+                                </div>
+                                <div className={`font-mono font-bold md:text-right md:mr-4 ${getTotalPlannedSpend() > (MAX_TEAM_TOTAL_BUDGET - Number(initialTeam?.total_spent || 0)) ? 'text-red-500 animate-pulse' : 'text-foreground'}`}>
                                     ₹{(getTotalPlannedSpend() / 100000).toFixed(2)}L
                                 </div>
                             </div>
                             <Button
                                 size="lg"
                                 onClick={handleSubmit}
-                                disabled={isSubmitting || hasSubmitted || getTotalPlannedSpend() === 0 || getTotalPlannedSpend() > budgetLeftGlobal}
-                                className={`w-full md:w-auto ${hasSubmitted ? 'bg-green-600 hover:bg-green-600' : ''}`}
+                                disabled={isSubmitting || hasSubmitted || getTotalPlannedSpend() === 0 || getTotalPlannedSpend() > budgetLeftGlobal || getTotalPlannedSpend() > (MAX_TEAM_TOTAL_BUDGET - Number(initialTeam?.total_spent || 0))}
+                                className={`w-full md:w-auto ${hasSubmitted ? 'bg-green-600 hover:bg-green-600' : ''} ${getTotalPlannedSpend() > (MAX_TEAM_TOTAL_BUDGET - Number(initialTeam?.total_spent || 0)) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 variant={hasSubmitted ? "default" : "default"} // Use default for submit
                             >
-                                {hasSubmitted ? 'Submitted (Waiting)' : 'Submit Bids'}
+                                {getTotalPlannedSpend() > (MAX_TEAM_TOTAL_BUDGET - Number(initialTeam?.total_spent || 0)) ? 'Over Budget' : (hasSubmitted ? 'Submitted (Waiting)' : 'Submit Bids')}
                             </Button>
                         </div>
                     </div>

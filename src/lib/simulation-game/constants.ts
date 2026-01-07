@@ -1,9 +1,10 @@
 import { ChannelConfig } from "@/types/simulation";
 
 export const ADMIN_EMAILS = ["sachin@mulearn.org", "admin@debrief.com"]; // Replace with actual admin emails
-export const TOTAL_BUDGET_POOL = 12500000; // 1.25 Cr
+export const TOTAL_BUDGET_POOL = 15000000; // 1.5 Cr (Global Pool)
 export const MAX_ROUNDS = 6;
 export const ROUND_DURATION_MS = 150000; // 2.5 minutes
+export const MAX_TEAM_TOTAL_BUDGET = 3000000; // 30L limit per team (Total across all rounds)
 
 export const CHANNELS: ChannelConfig[] = [
     {
