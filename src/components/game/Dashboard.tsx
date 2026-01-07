@@ -54,6 +54,7 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
 
     const isPlayer = !!initialTeam
     const isCreator = game.created_by === currentUser
+    const currentTeam = isPlayer ? (teams.find(t => t.id === initialTeam.id) || initialTeam) : null
 
     // Fetch all teams initially
     useEffect(() => {
@@ -166,10 +167,14 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                 // Force update if we drifted
                 setGame(latestGame as SimGame)
             }
-            // Also refresh teams occasionally
-            if (Math.random() > 0.7) { // 30% chance every 5s to avoid hammering
-                const { data } = await supabase.from('sim_teams').select('*').eq('game_id', game.id)
-                if (data) setTeams(data as SimTeam[])
+            // Also refresh teams (ALWAYS, to ensure stats update)
+            const { data } = await supabase.from('sim_teams').select('*').eq('game_id', game.id)
+            if (data) setTeams(data as SimTeam[])
+
+            // If Creator, refresh submissions status
+            if (isCreator) {
+                const { data: bids } = await supabase.from('sim_decisions').select('team_id').eq('game_id', game.id).eq('round_number', game.current_round)
+                if (bids) setSubmittedTeamIds(bids.map(b => b.team_id))
             }
         }, 5000)
         return () => clearInterval(pollInterval)
@@ -384,6 +389,14 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
         )
     }
 
+    // Calculate Rank
+    const sortedTeams = [...teams].sort((a, b) => {
+        const effA = a.total_spent > 0 ? (a.total_downloads / (a.total_spent / 100000)) : 0
+        const effB = b.total_spent > 0 ? (b.total_downloads / (b.total_spent / 100000)) : 0
+        return effB - effA
+    })
+    const myRank = currentTeam ? sortedTeams.findIndex(t => t.id === currentTeam.id) + 1 : '-'
+
     return (
         <div className="min-h-screen bg-background p-4 font-sans text-foreground pb-24 relative">
             <div className="fixed inset-0 z-[-1] bg-page-gradient pointer-events-none" />
@@ -544,11 +557,18 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                 {/* --- Sidebar (Your Stats & Leaderboard) --- */}
                 <div className="space-y-6">
                     {/* Your Team Status */}
-                    {/* Your Team Status */}
-                    {isPlayer && initialTeam && (
-                        <Card className="bg-blue-950/20 border-blue-500/20">
+                    {isPlayer && currentTeam && (
+                        <Card className="bg-blue-950/20 border-blue-500/20 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-2 opacity-10">
+                                <Trophy className="w-16 h-16 text-blue-500" />
+                            </div>
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-blue-400 text-lg">Your Agency: {initialTeam.name}</CardTitle>
+                                <CardTitle className="text-blue-400 text-lg flex items-center justify-between">
+                                    <span>{currentTeam.name}</span>
+                                    <Badge variant="secondary" className="bg-blue-500/20 text-blue-300">
+                                        Rank #{myRank}
+                                    </Badge>
+                                </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="grid grid-cols-2 gap-4">
@@ -558,14 +578,15 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                                     </div>
                                     <div>
                                         <div className="text-xs text-muted-foreground">Total Downloads</div>
-                                        <div className="text-xl font-mono text-foreground">{Math.floor(initialTeam.total_downloads).toLocaleString()}</div>
+                                        <div className="text-xl font-mono text-foreground">{Math.floor(currentTeam.total_downloads).toLocaleString()}</div>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
                     )}
 
-                    <Leaderboard teams={teams} />
+                    {/* Leaderboard - Only for Facilitator */}
+                    {isCreator && <Leaderboard teams={teams} />}
 
                     {/* Admin Controls */}
                     {isCreator && (
