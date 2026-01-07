@@ -110,25 +110,45 @@ export function IdeasList({ sort = "votes_desc" }: IdeasListProps) {
 
 function IdeasListSkeleton() {
     return (
-        <div className="flex flex-col gap-6">
-            {[1, 2, 3].map((i) => (
-                <div key={i} className="relative flex overflow-hidden rounded-[2rem] border border-border bg-card p-0">
-                    <div className="flex-1 px-8 py-7">
-                        <div className="mb-4 flex items-center gap-3">
-                            <Skeleton className="h-10 w-10 rounded-full" />
-                            <div className="flex flex-col gap-1">
-                                <Skeleton className="h-4 w-24" />
-                                <Skeleton className="h-3 w-16" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div
+                    key={i}
+                    className="relative flex flex-col overflow-hidden rounded-2xl border border-white/5 bg-[#09090b]/80 backdrop-blur-md"
+                >
+                    {/* Content Container */}
+                    <div className="flex flex-1 flex-col p-5 md:p-8">
+                        {/* Header: Author & Badge */}
+                        <div className="mb-6 flex items-start justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <Skeleton className="h-10 w-10 rounded-full" />
+                                <div className="flex flex-col gap-1">
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="h-3 w-16" />
+                                </div>
+                            </div>
+                            <Skeleton className="h-6 w-16 rounded-full" />
+                        </div>
+
+                        {/* Body: Title & Description */}
+                        <div className="flex-1 space-y-3">
+                            <Skeleton className="h-7 md:h-8 w-4/5" />
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-2/3" />
                             </div>
                         </div>
-                        <Skeleton className="mb-6 h-8 w-3/4" />
-                        <Skeleton className="h-9 w-32 rounded-full" />
                     </div>
 
-                    <div className="flex w-16 flex-col items-center justify-center gap-3 border-l border-border bg-muted/30">
-                        <Skeleton className="h-8 w-8 rounded-full" />
-                        <Skeleton className="h-6 w-4" />
-                        <Skeleton className="h-8 w-8 rounded-full" />
+                    {/* Footer */}
+                    <div className="border-t border-white/5 bg-white/[0.02] p-4">
+                        <div className="flex items-center justify-between">
+                            {/* Vote Controls */}
+                            <Skeleton className="h-10 w-28 rounded-full" />
+                            {/* Comments */}
+                            <Skeleton className="h-5 w-12" />
+                        </div>
                     </div>
                 </div>
             ))}

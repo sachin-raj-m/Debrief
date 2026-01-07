@@ -54,9 +54,10 @@ export function BackingDialog({ ideaId, trigger }: BackingDialogProps) {
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 {trigger || (
-                    <Button variant="shimmer-primary" size="lg" className="w-full sm:w-auto gap-2 font-bold">
-                        <Coins className="h-5 w-5" />
-                        Back this Idea
+                    <Button variant="shimmer-primary" size="lg" className="flex-1 sm:flex-initial sm:w-auto gap-2 font-bold text-sm sm:text-base h-10 sm:h-11">
+                        <Coins className="h-4 w-4 sm:h-5 sm:w-5" />
+                        <span className="hidden sm:inline">Back this Idea</span>
+                        <span className="sm:hidden">Back</span>
                     </Button>
                 )}
             </DialogTrigger>

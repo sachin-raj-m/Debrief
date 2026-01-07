@@ -63,7 +63,7 @@ function IdeaPageContent({ id }: { id: string }) {
         return (
             <>
                 <Header />
-                <main className="mx-auto max-w-7xl px-6 pt-32 pb-8">
+                <main className="mx-auto w-full max-w-[1600px] px-4 md:px-8 pt-32 pb-8 min-h-[calc(100vh-4rem)]">
                     <IdeaDetailSkeleton />
                 </main>
             </>
@@ -74,7 +74,7 @@ function IdeaPageContent({ id }: { id: string }) {
         return (
             <>
                 <Header />
-                <main className="mx-auto max-w-7xl px-6 pt-32 pb-8">
+                <main className="mx-auto w-full max-w-[1600px] px-4 md:px-8 pt-32 pb-8">
                     <div className="flex flex-col items-center justify-center rounded-[2rem] border border-dashed border-border bg-card/50 p-12 text-center">
                         <p className="font-display text-xl font-semibold text-foreground">Idea not found</p>
                         <p className="mt-2 text-sm text-muted-foreground">
@@ -126,7 +126,7 @@ function IdeaDetail({
     const { mutate: vote, isPending: isVoting } = useVote(idea.id);
     const { mutate: removeVote, isPending: isRemoving } = useRemoveVote(idea.id);
     const { data: levels } = useIdeaLevels(idea.id);
-    const [activeTab, setActiveTab] = useState<"description" | "journey" | "history" | "team">("description");
+    const [activeTab, setActiveTab] = useState<"journey" | "history" | "team">("journey");
 
     // Ownership and collaboration permissions
     const isOwner = isAuthenticated && user?.id === idea.user_id;
@@ -177,20 +177,22 @@ function IdeaDetail({
             <div className="absolute -right-40 -top-40 h-96 w-96 rounded-full bg-[#7877c6]/10 blur-[120px] pointer-events-none" />
 
             {/* Header Section */}
-            <div className="p-8 md:p-12 pb-0">
-                <div className="mb-8 flex flex-wrap gap-6 items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Avatar className="h-14 w-14 border-2 border-white/10 shadow-md">
+            <div className="p-4 sm:p-6 md:p-8 lg:p-12 pb-0">
+                {/* Author & Actions Row */}
+                <div className="mb-6 md:mb-8 flex flex-col sm:flex-row gap-4 sm:gap-6 sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                        <Avatar className="h-10 w-10 sm:h-12 md:h-14 sm:w-12 md:w-14 border-2 border-white/10 shadow-md shrink-0">
                             <AvatarImage src={idea.author?.avatar_url || undefined} />
-                            <AvatarFallback className="bg-white/10 text-foreground">{getInitials(idea.author?.full_name)}</AvatarFallback>
+                            <AvatarFallback className="bg-white/10 text-foreground text-sm sm:text-base">{getInitials(idea.author?.full_name)}</AvatarFallback>
                         </Avatar>
-                        <div className="flex flex-col gap-0.5">
-                            <span className="text-lg font-bold text-foreground tracking-tight">{idea.author?.full_name || "Anonymous"}</span>
-                            <span className="text-sm font-medium text-muted-foreground">{formatDistanceToNow(idea.created_at)}</span>
+                        <div className="flex flex-col gap-0.5 min-w-0">
+                            <span className="text-base sm:text-lg font-bold text-foreground tracking-tight truncate">{idea.author?.full_name || "Anonymous"}</span>
+                            <span className="text-xs sm:text-sm font-medium text-muted-foreground">{formatDistanceToNow(idea.created_at)}</span>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    {/* Action Buttons Row */}
+                    <div className="grid grid-cols-[1fr_auto] sm:flex sm:flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                         {canEdit && (
                             <PivotDialog
                                 ideaId={idea.id}
@@ -202,7 +204,7 @@ function IdeaDetail({
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="gap-2 h-10 px-4 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 text-muted-foreground hover:text-foreground transition-all"
+                            className="gap-2 h-10 w-10 sm:w-auto sm:px-4 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 text-muted-foreground hover:text-foreground transition-all text-sm justify-center"
                             onClick={() => {
                                 const url = `${window.location.origin}/share/${idea.id}`;
                                 navigator.clipboard.writeText(url);
@@ -210,82 +212,83 @@ function IdeaDetail({
                             }}
                         >
                             <Share2 className="h-4 w-4" />
-                            Share
+                            <span className="hidden sm:inline">Share</span>
                         </Button>
                     </div>
                 </div>
 
-                <div className="grid gap-8 md:grid-cols-[1fr_300px]">
+                {/* Title & Valuation Card Grid */}
+                <div className="grid gap-6 lg:gap-8 lg:grid-cols-[1fr_300px]">
                     <div>
-                        <h1 className="mb-6 font-display text-4xl md:text-5xl font-bold leading-[1.1] text-foreground tracking-tight drop-shadow-sm">{idea.title}</h1>
-                    </div>
-                    <div className="md:pt-2">
-                        <ValuationCard ideaId={idea.id} />
-                    </div>
-                </div>
+                        <h1 className="mb-4 md:mb-6 font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-[1.1] text-foreground tracking-tight drop-shadow-sm">{idea.title}</h1>
 
-                {/* Tabs Navigation */}
-                <div className="flex items-center gap-8 border-b border-white/10 mt-12 px-2">
-                    {["description", "journey", "history", ...(isOwner || isCollaborator ? ["team"] : [])].map((tab) => (
-                        <button
-                            key={tab}
-                            onClick={() => setActiveTab(tab as any)}
-                            className={cn(
-                                "pb-4 text-sm font-bold tracking-wide uppercase transition-all relative",
-                                activeTab === tab ? "text-foreground" : "text-muted-foreground/60 hover:text-foreground/80"
-                            )}
-                        >
-                            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                            {activeTab === tab && (
-                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
-                            )}
-                        </button>
-                    ))}
-                </div>
-            </div>
+                        {/* Description */}
+                        <p className="mb-6 text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed whitespace-pre-wrap">{idea.description}</p>
 
-            {/* Tab Content */}
-            <div className="p-8 md:p-12 pt-8">
-                {activeTab === "description" ? (
-                    <>
-                        <p className="mb-8 text-lg text-muted-foreground leading-relaxed whitespace-pre-wrap">{idea.description}</p>
-
-                        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
-                            <div className="flex items-center gap-2 rounded-full border border-border bg-background/50 p-1.5 shadow-sm">
+                        {/* Voting & Comments */}
+                        <div className="flex flex-wrap items-center gap-4">
+                            <div className="flex items-center gap-1 sm:gap-2 rounded-full border border-border bg-background/50 p-1 sm:p-1.5 shadow-sm">
                                 <button
                                     onClick={() => handleVote(1)}
                                     disabled={isVoting || isRemoving || authLoading}
-                                    className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-muted ${userVote === 1 ? "bg-green-500/10 text-green-600 hover:bg-green-500/20" : "text-muted-foreground"}`}
+                                    className={`flex items-center justify-center rounded-full w-8 h-8 sm:w-9 sm:h-9 transition-colors hover:bg-muted ${userVote === 1 ? "bg-green-500/10 text-green-600 hover:bg-green-500/20" : "text-muted-foreground"}`}
                                 >
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={userVote === 1 ? "fill-current" : ""}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={userVote === 1 ? "fill-current" : ""}>
                                         <path d="M18 15l-6-6-6 6" />
                                     </svg>
-                                    <span>{idea.upvotes_count ?? 0}</span>
                                 </button>
 
-                                <span className="min-w-[2rem] text-center font-bold text-foreground">{netVotes > 0 ? `+${netVotes}` : netVotes}</span>
+                                <span className="min-w-6 sm:min-w-8 text-center text-sm sm:text-base font-bold text-foreground">{netVotes > 0 ? `+${netVotes}` : netVotes}</span>
 
                                 <button
                                     onClick={() => handleVote(-1)}
                                     disabled={isVoting || isRemoving || authLoading}
-                                    className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-muted ${userVote === -1 ? "bg-red-500/10 text-red-600 hover:bg-red-500/20" : "text-muted-foreground"}`}
+                                    className={`flex items-center justify-center rounded-full w-8 h-8 sm:w-9 sm:h-9 transition-colors hover:bg-muted ${userVote === -1 ? "bg-red-500/10 text-red-600 hover:bg-red-500/20" : "text-muted-foreground"}`}
                                 >
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={userVote === -1 ? "fill-current" : ""}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={userVote === -1 ? "fill-current" : ""}>
                                         <path d="M6 9l6 6 6-6" />
                                     </svg>
-                                    <span>{idea.downvotes_count ?? 0}</span>
                                 </button>
                             </div>
 
-                            <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <span className="flex items-center gap-2 text-xs sm:text-sm font-medium text-muted-foreground">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                                 </svg>
                                 {idea.comments_count ?? 0} comments
                             </span>
                         </div>
-                    </>
-                ) : activeTab === "journey" ? (
+                    </div>
+                    <div className="lg:pt-2">
+                        <ValuationCard ideaId={idea.id} />
+                    </div>
+                </div>
+
+                {/* Tabs Navigation - Horizontal scrollable on mobile */}
+                <div className="-mx-4 sm:mx-0 mt-8 md:mt-12 border-b border-white/10">
+                    <div className="flex items-center gap-4 sm:gap-6 md:gap-8 overflow-x-auto scrollbar-hide px-4 sm:px-2">
+                        {["journey", "history", ...(isOwner || isCollaborator ? ["team"] : [])].map((tab) => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab as any)}
+                                className={cn(
+                                    "pb-3 md:pb-4 text-xs sm:text-sm font-bold tracking-wide uppercase transition-all relative whitespace-nowrap shrink-0",
+                                    activeTab === tab ? "text-foreground" : "text-muted-foreground/60 hover:text-foreground/80"
+                                )}
+                            >
+                                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                {activeTab === tab && (
+                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Tab Content */}
+            <div className="p-4 sm:p-6 md:p-8 lg:p-12 pt-6 md:pt-8">
+                {activeTab === "journey" ? (
                     <div className="space-y-8">
                         <JourneyStepper
                             currentLevel={currentLevel}
@@ -493,22 +496,78 @@ function CommentsSection({
 
 function IdeaDetailSkeleton() {
     return (
-        <div className="mb-8 overflow-hidden rounded-[2.5rem] bg-card p-8 md:p-12 shadow-sm border border-border">
-            <div className="mb-6 flex items-center gap-4">
-                <Skeleton className="h-12 w-12 rounded-full" />
-                <div className="flex flex-col gap-2">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-3 w-20" />
+        <article className="group relative mb-8 overflow-hidden rounded-[2.5rem] bg-[#09090b]/80 border border-white/5 shadow-2xl backdrop-blur-md">
+            {/* Header Section */}
+            <div className="p-4 sm:p-6 md:p-8 lg:p-12 pb-0">
+                {/* Author & Actions Row */}
+                <div className="mb-6 md:mb-8 flex flex-col sm:flex-row gap-4 sm:gap-6 sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                        <Skeleton className="h-10 w-10 sm:h-12 md:h-14 sm:w-12 md:w-14 rounded-full" />
+                        <div className="flex flex-col gap-1.5">
+                            <Skeleton className="h-5 w-32 sm:w-40" />
+                            <Skeleton className="h-4 w-20 sm:w-24" />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-[1fr_auto] sm:flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                        <Skeleton className="h-10 sm:h-11 flex-1 sm:flex-initial sm:w-36 rounded-full" />
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                    </div>
+                </div>
+
+                {/* Title & Valuation Grid */}
+                <div className="grid gap-6 lg:gap-8 lg:grid-cols-[1fr_300px]">
+                    <div>
+                        {/* Title */}
+                        <Skeleton className="mb-4 md:mb-6 h-8 sm:h-10 md:h-12 lg:h-14 w-full sm:w-4/5" />
+
+                        {/* Description */}
+                        <div className="space-y-2 mb-6">
+                            <Skeleton className="h-4 sm:h-5 w-full" />
+                            <Skeleton className="h-4 sm:h-5 w-full" />
+                            <Skeleton className="h-4 sm:h-5 w-3/4" />
+                        </div>
+
+                        {/* Voting & Comments */}
+                        <div className="flex flex-wrap items-center gap-4">
+                            <Skeleton className="h-10 w-24 sm:w-28 rounded-full" />
+                            <Skeleton className="h-5 w-24 sm:w-28" />
+                        </div>
+                    </div>
+
+                    {/* ValuationCard Skeleton */}
+                    <div className="lg:pt-2">
+                        <div className="rounded-2xl border border-white/5 bg-white/5 p-4 sm:p-6 md:p-8">
+                            <div className="flex items-center gap-2 mb-3">
+                                <Skeleton className="h-4 w-4" />
+                                <Skeleton className="h-4 w-28 sm:w-32" />
+                            </div>
+                            <Skeleton className="mb-1 h-8 sm:h-10 w-16 sm:w-20" />
+                            <Skeleton className="mb-4 h-3 w-32 sm:w-48" />
+                            <div className="flex items-center gap-2 mb-3">
+                                <Skeleton className="h-3 w-3" />
+                                <Skeleton className="h-4 w-24 sm:w-28" />
+                            </div>
+                            <Skeleton className="h-10 sm:h-12 w-full rounded-xl" />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Tabs */}
+                <div className="-mx-4 sm:mx-0 mt-8 md:mt-12 border-b border-white/10">
+                    <div className="flex items-center gap-4 sm:gap-6 md:gap-8 px-4 sm:px-2">
+                        <Skeleton className="h-8 w-16 sm:w-20" />
+                        <Skeleton className="h-8 w-16 sm:w-20" />
+                    </div>
                 </div>
             </div>
-            <Skeleton className="mb-4 h-10 w-3/4" />
-            <Skeleton className="mb-2 h-4 w-full" />
-            <Skeleton className="mb-2 h-4 w-full" />
-            <Skeleton className="mb-8 h-4 w-2/3" />
 
-            <div className="border-t border-border pt-6">
-                <Skeleton className="h-10 w-48 rounded-full" />
+            {/* Tab Content */}
+            <div className="p-4 sm:p-6 md:p-8 lg:p-12 pt-6 md:pt-8">
+                <div className="space-y-4">
+                    <Skeleton className="h-16 sm:h-20 w-full rounded-xl" />
+                    <Skeleton className="h-16 sm:h-20 w-full rounded-xl" />
+                </div>
             </div>
-        </div>
+        </article>
     );
 }
