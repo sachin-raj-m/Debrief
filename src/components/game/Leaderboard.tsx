@@ -67,8 +67,8 @@ export default function Leaderboard({ teams, gameId, isFacilitator = false }: Le
                     <div className="space-y-4">
                         {sortedTeams.map((team, index) => {
                             const efficiency = team.total_spent > 0
-                                ? (team.total_downloads / (team.total_spent / 100000)).toFixed(1)
-                                : "0.0"
+                                ? Math.floor(team.total_downloads / (team.total_spent / 100000)).toString()
+                                : "0"
 
                             // Styles based on rank
                             const isWinner = index === 0
@@ -117,12 +117,18 @@ export default function Leaderboard({ teams, gameId, isFacilitator = false }: Le
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <div className={`font-bold flex items-center justify-end gap-1 ${isWinner ? 'text-cyan-400 text-lg' : 'text-green-400 text-sm'}`}>
-                                            {efficiency} <span className="text-xs font-normal text-muted-foreground">/ ₹1L</span>
+                                    <div className="text-right flex flex-col items-end gap-0.5">
+                                        <div className="flex items-center gap-1.5 justify-end">
+                                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground hidden sm:inline-block">Efficiency:</span>
+                                            <div className={`font-bold flex items-center gap-1 ${isWinner ? 'text-cyan-400 text-lg' : 'text-green-400 text-sm'}`}>
+                                                {efficiency} <span className="text-xs font-normal text-muted-foreground">downloads per 1 lakh</span>
+                                            </div>
                                         </div>
-                                        <div className="text-xs text-muted-foreground">
-                                            ₹{(team.total_spent / 100000).toFixed(1)}L spent
+                                        <div className="flex items-center gap-1.5 justify-end">
+                                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground hidden sm:inline-block">Total Spent:</span>
+                                            <div className="text-xs text-muted-foreground">
+                                                ₹{(team.total_spent / 100000).toFixed(1)}L
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
