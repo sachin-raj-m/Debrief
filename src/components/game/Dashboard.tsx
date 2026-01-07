@@ -422,7 +422,9 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                     Game Over!
                 </h1>
                 <div className="w-full max-w-2xl">
-                    <Leaderboard teams={teams} />
+                    <div className="w-full max-w-2xl">
+                        <Leaderboard teams={teams} gameId={game.id} isFacilitator={isCreator} />
+                    </div>
                 </div>
                 <Button onClick={() => router.push('/game')} className="mt-8" variant="default">Back to Lobby</Button>
             </div>
@@ -628,7 +630,7 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                     )}
 
                     {/* Leaderboard - Only for Facilitator */}
-                    {isCreator && <Leaderboard teams={teams} />}
+                    {isCreator && <Leaderboard teams={teams} gameId={game.id} isFacilitator={true} />}
 
                     {/* Admin Controls */}
                     {isCreator && (
