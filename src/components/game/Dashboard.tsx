@@ -625,15 +625,15 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
 
             {/* --- Sticky Footer Action --- */}
             {isPlayer && (
-                <div className="fixed bottom-0 left-0 w-full bg-background/80 backdrop-blur-md border-t border-white/10 p-4">
-                    <div className="max-w-7xl mx-auto flex items-center justify-between">
+                <div className="fixed bottom-0 left-0 w-full bg-background/95 backdrop-blur-md border-t border-white/10 p-4 z-50">
+                    <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
                         <div className="text-muted-foreground text-sm hidden md:block">
                             Adjust sliders above to allocate your budget.
                         </div>
-                        <div className="flex gap-4 items-center w-full md:w-auto">
-                            <div className="text-right mr-4">
-                                <div className="text-xs text-muted-foreground">Round Allocation</div>
-                                <div className={`font-mono font-bold ${getTotalPlannedSpend() > budgetLeftGlobal ? 'text-red-500' : 'text-foreground'}`}>
+                        <div className="flex flex-col md:flex-row gap-3 md:gap-4 items-stretch md:items-center w-full md:w-auto">
+                            <div className="flex justify-between md:block items-center">
+                                <div className="text-xs text-muted-foreground md:text-right md:mr-4">Round Allocation</div>
+                                <div className={`font-mono font-bold md:text-right md:mr-4 ${getTotalPlannedSpend() > budgetLeftGlobal ? 'text-red-500' : 'text-foreground'}`}>
                                     ₹{(getTotalPlannedSpend() / 100000).toFixed(2)}L
                                 </div>
                             </div>
@@ -642,7 +642,7 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                                 onClick={handleSubmit}
                                 disabled={isSubmitting || hasSubmitted || getTotalPlannedSpend() === 0 || getTotalPlannedSpend() > budgetLeftGlobal}
                                 className={`w-full md:w-auto ${hasSubmitted ? 'bg-green-600 hover:bg-green-600' : ''}`}
-                                variant={hasSubmitted ? "default" : "default"} // Use default for submit, or maybe brand color
+                                variant={hasSubmitted ? "default" : "default"} // Use default for submit
                             >
                                 {hasSubmitted ? 'Submitted (Waiting)' : 'Submit Bids'}
                             </Button>
