@@ -203,7 +203,22 @@ function IdeaDetail({
                         )}
                         <BackingDialog ideaId={idea.id} />
 
-                        {/* Actions Menu for Edit/Delete/Share */}
+                        {/* Share Button - Always Visible */}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="gap-2 h-10 w-10 sm:w-auto sm:px-4 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 text-muted-foreground hover:text-foreground transition-all text-sm justify-center"
+                            onClick={() => {
+                                const url = `${window.location.origin}/share/${idea.id}`;
+                                navigator.clipboard.writeText(url);
+                                toast.success("Public link copied!");
+                            }}
+                        >
+                            <Share2 className="h-4 w-4" />
+                            <span className="hidden sm:inline">Share</span>
+                        </Button>
+
+                        {/* Actions Menu for Edit/Delete */}
                         <IdeaActionsMenu
                             ideaId={idea.id}
                             ideaTitle={idea.title}
@@ -211,23 +226,6 @@ function IdeaDetail({
                             canEdit={canEdit}
                             canDelete={canManage}
                         />
-
-                        {/* Fallback Share button if no edit/delete access */}
-                        {!canEdit && !canManage && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="gap-2 h-10 w-10 sm:w-auto sm:px-4 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 text-muted-foreground hover:text-foreground transition-all text-sm justify-center"
-                                onClick={() => {
-                                    const url = `${window.location.origin}/share/${idea.id}`;
-                                    navigator.clipboard.writeText(url);
-                                    toast.success("Public link copied!");
-                                }}
-                            >
-                                <Share2 className="h-4 w-4" />
-                                <span className="hidden sm:inline">Share</span>
-                            </Button>
-                        )}
                     </div>
                 </div>
 

@@ -22,12 +22,28 @@ export async function GET(request: Request) {
     if (!error && sessionData?.user) {
       const user = sessionData.user;
       
-      // Check if this is a new user (created within last minute)
-      const createdAt = new Date(user.created_at);
-      const now = new Date();
-      const isNewUser = (now.getTime() - createdAt.getTime()) < 60000; // 60 seconds
+      // Check if this is a new user by looking for a profile
+      // A profile is created on first login via database trigger, so if no profile exists
+      // OR the profile was just created, this is a new user
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id, created_at")
+        .eq("id", user.id)
+        .single();
+      
+      // Determine if new user:
+      // - No profile exists yet (trigger might not have run)
+      // - OR profile was created within last 5 minutes (just signed up)
+      const isNewUser = !profile || (
+        profile.created_at && 
+        (Date.now() - new Date(profile.created_at).getTime()) < 5 * 60 * 1000 // 5 minutes
+      );
+      
+      console.log(`[Auth Callback] User ${user.email}: isNewUser=${isNewUser}, profile=${profile ? 'exists' : 'none'}`);
       
       if (isNewUser && user.email) {
+        console.log(`[Auth Callback] Sending welcome email to ${user.email}`);
+        
         // Send welcome email asynchronously (don't block auth flow)
         sendEmail({
           to: user.email,
@@ -40,6 +56,8 @@ export async function GET(request: Request) {
             userName: user.user_metadata?.full_name || user.email.split('@')[0],
             userEmail: user.email,
           }),
+        }).then(() => {
+          console.log(`[Auth Callback] Welcome email sent successfully to ${user.email}`);
         }).catch((err) => {
           console.error("[Auth Callback] Failed to send welcome email:", err);
         });
@@ -53,4 +71,3 @@ export async function GET(request: Request) {
   // Return to login page with error
   return NextResponse.redirect(`${origin}/login?error=auth_callback_error`);
 }
-
