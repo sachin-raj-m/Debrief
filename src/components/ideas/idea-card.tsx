@@ -130,7 +130,7 @@ export function IdeaCard({ idea, variant = "glass" }: IdeaCardProps) {
                                         : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
                                 )}
                             >
-                                <ArrowUpRight className="h-4 w-4" />
+                                <ArrowUpRight className="h-4 w-4 -rotate-45" />
                             </button>
 
                             <span className={cn(
