@@ -317,7 +317,8 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
     const handleSubmit = async () => {
         if (!initialTeam) return
 
-        const totalSpent = Number(initialTeam.total_spent || 0)
+        // Use currentTeam (reactive) instead of initialTeam (static prop)
+        const totalSpent = Number(currentTeam?.total_spent || 0)
         const budgetLeftForTeam = MAX_TEAM_TOTAL_BUDGET - totalSpent
 
         if (getTotalPlannedSpend() > budgetLeftForTeam) {
@@ -663,20 +664,20 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                         <div className="flex flex-col md:flex-row gap-3 md:gap-4 items-stretch md:items-center w-full md:w-auto">
                             <div className="flex justify-between md:block items-center">
                                 <div className="text-xs text-muted-foreground md:text-right md:mr-4">
-                                    Allocation / <span className="text-foreground font-bold">₹{((MAX_TEAM_TOTAL_BUDGET - Number(initialTeam?.total_spent || 0)) / 100000).toFixed(1)}L Left (Game Total)</span>
+                                    Allocation / <span className="text-foreground font-bold">₹{((MAX_TEAM_TOTAL_BUDGET - Number(currentTeam?.total_spent || 0)) / 100000).toFixed(1)}L Left (Game Total)</span>
                                 </div>
-                                <div className={`font-mono font-bold md:text-right md:mr-4 ${getTotalPlannedSpend() > (MAX_TEAM_TOTAL_BUDGET - Number(initialTeam?.total_spent || 0)) ? 'text-red-500 animate-pulse' : 'text-foreground'}`}>
+                                <div className={`font-mono font-bold md:text-right md:mr-4 ${getTotalPlannedSpend() > (MAX_TEAM_TOTAL_BUDGET - Number(currentTeam?.total_spent || 0)) ? 'text-red-500 animate-pulse' : 'text-foreground'}`}>
                                     ₹{(getTotalPlannedSpend() / 100000).toFixed(2)}L
                                 </div>
                             </div>
                             <Button
                                 size="lg"
                                 onClick={handleSubmit}
-                                disabled={isSubmitting || hasSubmitted || getTotalPlannedSpend() === 0 || getTotalPlannedSpend() > (MAX_TEAM_TOTAL_BUDGET - Number(initialTeam?.total_spent || 0))}
-                                className={`w-full md:w-auto ${hasSubmitted ? 'bg-green-600 hover:bg-green-600' : ''} ${getTotalPlannedSpend() > (MAX_TEAM_TOTAL_BUDGET - Number(initialTeam?.total_spent || 0)) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                disabled={isSubmitting || hasSubmitted || getTotalPlannedSpend() === 0 || getTotalPlannedSpend() > (MAX_TEAM_TOTAL_BUDGET - Number(currentTeam?.total_spent || 0))}
+                                className={`w-full md:w-auto ${hasSubmitted ? 'bg-green-600 hover:bg-green-600' : ''} ${getTotalPlannedSpend() > (MAX_TEAM_TOTAL_BUDGET - Number(currentTeam?.total_spent || 0)) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 variant={hasSubmitted ? "default" : "default"} // Use default for submit
                             >
-                                {getTotalPlannedSpend() > (MAX_TEAM_TOTAL_BUDGET - Number(initialTeam?.total_spent || 0)) ? 'Over Budget' : (hasSubmitted ? 'Submitted (Waiting)' : 'Submit Bids')}
+                                {getTotalPlannedSpend() > (MAX_TEAM_TOTAL_BUDGET - Number(currentTeam?.total_spent || 0)) ? 'Over Budget' : (hasSubmitted ? 'Submitted (Waiting)' : 'Submit Bids')}
                             </Button>
                         </div>
                     </div>
