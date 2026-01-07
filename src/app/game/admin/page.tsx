@@ -28,7 +28,7 @@ export default function AdminGamePage() {
     }
 
     return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-4 font-sans max-w-[1600px] mx-auto text-foreground relative">
+        <div className="min-h-screen flex items-center justify-center p-4 font-sans max-w-[1600px] mx-auto text-foreground relative">
             <div className="fixed inset-0 z-[-1] bg-page-gradient pointer-events-none" />
 
             <Card variant="glass" className="w-full max-w-md">

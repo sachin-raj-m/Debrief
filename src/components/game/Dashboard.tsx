@@ -631,7 +631,7 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                             Adjust sliders above to allocate your budget.
                         </div>
                         <div className="flex gap-4 items-center w-full md:w-auto">
-                            <div className="text-right mr-4">
+                            <div className="text-right mr-4 flex-shrink-0">
                                 <div className="text-xs text-muted-foreground">Round Allocation</div>
                                 <div className={`font-mono font-bold ${getTotalPlannedSpend() > budgetLeftGlobal ? 'text-red-500' : 'text-foreground'}`}>
                                     ₹{(getTotalPlannedSpend() / 100000).toFixed(2)}L
@@ -641,7 +641,7 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                                 size="lg"
                                 onClick={handleSubmit}
                                 disabled={isSubmitting || hasSubmitted || getTotalPlannedSpend() === 0 || getTotalPlannedSpend() > budgetLeftGlobal}
-                                className={`w-full md:w-auto ${hasSubmitted ? 'bg-green-600 hover:bg-green-600' : ''}`}
+                                className={`flex-1 md:w-auto md:flex-none ${hasSubmitted ? 'bg-green-600 hover:bg-green-600' : ''}`}
                                 variant={hasSubmitted ? "default" : "default"} // Use default for submit, or maybe brand color
                             >
                                 {hasSubmitted ? 'Submitted (Waiting)' : 'Submit Bids'}
