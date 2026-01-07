@@ -52,6 +52,7 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
     }, [game.id, game.current_round, supabase])
 
     const isPlayer = !!initialTeam
+    const isCreator = game.created_by === currentUser
 
     // Fetch all teams initially
     useEffect(() => {
@@ -62,21 +63,24 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
         fetchTeams()
     }, [game.id, supabase])
 
-    // Real-time Subscriptions - Only depend on game.id to prevent subscription recreation
+    // Real-time Subscriptions - Re-added dependencies to ensure closures are fresh
     useEffect(() => {
+        console.log("Subscribing to game_updates and team_updates for:", game.id)
+
         const gameSub = supabase
             .channel('game_updates')
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sim_games', filter: `id=eq.${game.id}` },
                 (payload) => {
+                    console.log("Received game update:", payload)
                     const newGame = payload.new as SimGame
 
-                    // Use functional update to compare with previous state
                     setGame(prevGame => {
                         // Reset submission state on new round
                         if (newGame.current_round !== prevGame.current_round) {
+                            console.log(`Round changed from ${prevGame.current_round} to ${newGame.current_round}`)
                             setHasSubmitted(false)
                             setInputs({})
-                            setSubmittedTeamIds([]) // Clear submitted teams for new round
+                            setSubmittedTeamIds([])
                             toast.info(`Round ${newGame.current_round + 1} Started!`)
 
                             // Refresh teams to get updated totals after round processing
@@ -85,12 +89,13 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                             })
                         }
 
-                        if (newGame.status === 'active' && prevGame.status === 'waiting') {
-                            toast.success("Game Started!")
-                        }
-
+                        // Handle Game Over
                         if (newGame.status === 'completed' && prevGame.status !== 'completed') {
                             toast.info("Game Over! 🎉")
+                        }
+
+                        if (newGame.status === 'active' && prevGame.status === 'waiting') {
+                            toast.success("Game Started!")
                         }
 
                         return newGame
@@ -102,8 +107,9 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
         const teamSub = supabase
             .channel('team_updates')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'sim_teams', filter: `game_id=eq.${game.id}` },
-                async () => {
-                    // Refresh all teams
+                async (payload) => {
+                    console.log("Received team update:", payload)
+                    // Refresh all teams to ensure leaderboard sync
                     const { data } = await supabase.from('sim_teams').select('*').eq('game_id', game.id)
                     if (data) setTeams(data as SimTeam[])
                 }
@@ -114,18 +120,28 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
             supabase.removeChannel(gameSub)
             supabase.removeChannel(teamSub)
         }
-    }, [game.id, supabase]) // Only game.id dependency
+    }, [game.id, supabase])
 
     // Real-time Decisions Subscription (For Facilitator)
+    // CRITICAL: Must depend on game.current_round to filter correctly
     useEffect(() => {
+        if (!isCreator) return; // Only subscribe if creator
+
+        console.log("Subscribing to decision_updates for round:", game.current_round)
         const decisionSub = supabase
             .channel('decision_updates')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'sim_decisions', filter: `game_id=eq.${game.id}` },
                 (payload) => {
+                    console.log("Received decision update:", payload)
                     const newDecision = payload.new as { team_id: string, round_number: number }
+
+                    // Check against the CURRENT round in the dependency closure
                     if (newDecision.round_number === game.current_round) {
                         setSubmittedTeamIds(prev => {
-                            if (!prev.includes(newDecision.team_id)) return [...prev, newDecision.team_id]
+                            if (!prev.includes(newDecision.team_id)) {
+                                console.log("New submission detected from:", newDecision.team_id)
+                                return [...prev, newDecision.team_id]
+                            }
                             return prev
                         })
                     }
@@ -136,7 +152,7 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
         return () => {
             supabase.removeChannel(decisionSub)
         }
-    }, [game.id, game.current_round, supabase])
+    }, [game.id, game.current_round, isCreator, supabase])
 
     // --- Handlers ---
 
@@ -204,7 +220,7 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
     // --- Derived State ---
     const budgetLeftGlobal = game.budget_pool
     const budgetPercent = (budgetLeftGlobal / TOTAL_BUDGET_POOL) * 100
-    const isCreator = game.created_by === currentUser
+
 
     if (game.status === 'completed') {
         return (
