@@ -3,7 +3,7 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { calculateRoundResults } from '@/lib/simulation-game/engine'
-import { TOTAL_BUDGET_POOL, ADMIN_EMAILS } from '@/lib/simulation-game/constants'
+import { TOTAL_BUDGET_POOL, ADMIN_EMAILS, ROUND_DURATION_MS } from '@/lib/simulation-game/constants'
 import { SimDecision, SimTeam } from '@/types/simulation'
 
 export async function createGame() {
@@ -41,9 +41,14 @@ export async function startGame(gameId: string) {
     if (!user || !user.email) throw new Error("Unauthorized")
     if (!ADMIN_EMAILS.includes(user.email)) throw new Error("Only admins can start")
 
+    const roundEndsAt = new Date(Date.now() + ROUND_DURATION_MS).toISOString()
+
     const { error } = await supabase
         .from('sim_games')
-        .update({ status: 'active' })
+        .update({
+            status: 'active',
+            round_ends_at: roundEndsAt
+        })
         .eq('id', gameId)
 
     if (error) throw new Error(error.message)
@@ -235,10 +240,13 @@ export async function processRound(gameId: string) {
     // Game ends if: we've completed all rounds OR budget is depleted
     const isGameOver = nextRound >= 6 || newBudget <= 0
 
+    const roundEndsAt = new Date(Date.now() + ROUND_DURATION_MS).toISOString()
+
     await supabase.from('sim_games').update({
         current_round: nextRound,
         budget_pool: Math.max(0, newBudget), // Don't go negative
-        status: isGameOver ? 'completed' : 'active'
+        status: isGameOver ? 'completed' : 'active',
+        round_ends_at: isGameOver ? null : roundEndsAt
     }).eq('id', gameId)
 
     revalidatePath(`/game/${gameId}`)

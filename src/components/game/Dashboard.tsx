@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { SimGame, SimTeam } from '@/types/simulation'
+import { SimDecision, SimGame, SimTeam, SimResult } from "@/types/simulation"
 import { CHANNELS, TOTAL_BUDGET_POOL, MAX_ROUNDS } from '@/lib/simulation-game/constants'
 import { submitDecision, processRound, startGame } from '@/app/actions/game-actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Slider } from '@/components/ui/slider'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { Clock, TrendingUp, TrendingDown, Info, AlertTriangle, Users, Loader2 } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
+import { Trophy, TrendingUp, TrendingDown, DollarSign, Clock, Users, ArrowRight, AlertTriangle, Play, Info, Loader2 } from "lucide-react"
 import { toast } from 'sonner'
 import Leaderboard from './Leaderboard'
 import { useRouter } from 'next/navigation'
@@ -154,6 +155,60 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
         }
     }, [game.id, game.current_round, isCreator, supabase])
 
+    // --- Timer & Polling ---
+    const [timeLeft, setTimeLeft] = useState<number | null>(null)
+
+    // Polling Fallback to ensure state sync even if realtime fails
+    useEffect(() => {
+        const pollInterval = setInterval(async () => {
+            const { data: latestGame } = await supabase.from('sim_games').select('*').eq('id', game.id).single()
+            if (latestGame && latestGame.current_round !== game.current_round) {
+                // Force update if we drifted
+                setGame(latestGame as SimGame)
+            }
+            // Also refresh teams occasionally
+            if (Math.random() > 0.7) { // 30% chance every 5s to avoid hammering
+                const { data } = await supabase.from('sim_teams').select('*').eq('game_id', game.id)
+                if (data) setTeams(data as SimTeam[])
+            }
+        }, 5000)
+        return () => clearInterval(pollInterval)
+    }, [game.id, game.current_round, supabase])
+
+    // Countdown Timer & Auto-Process
+    useEffect(() => {
+        if (game.status !== 'active' || !game.round_ends_at) {
+            setTimeLeft(null)
+            return
+        }
+
+        const checkTimer = () => {
+            const end = new Date(game.round_ends_at!).getTime()
+            const now = Date.now()
+            const diff = end - now
+
+            setTimeLeft(Math.max(0, diff))
+
+            // Auto-ends round for Creator
+            if (diff <= 0 && isCreator && !isSubmitting) {
+                console.log("Timer expired! Auto-processing round...")
+                handleProcessRound()
+            }
+        }
+
+        // Check immediately
+        checkTimer()
+
+        const timer = setInterval(checkTimer, 1000)
+        return () => clearInterval(timer)
+    }, [game.round_ends_at, game.status, isCreator, isSubmitting])
+
+    const formatTime = (ms: number) => {
+        const seconds = Math.floor((ms / 1000) % 60)
+        const minutes = Math.floor((ms / 1000 / 60))
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`
+    }
+
     // --- Handlers ---
 
     const handleInputChange = (channelId: string, value: number) => {
@@ -216,6 +271,42 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
             setIsSubmitting(false)
         }
     }
+
+    // --- Round Report Logic ---
+    const [roundReport, setRoundReport] = useState<{ myResult: SimResult | undefined, topResult: SimResult | undefined, teamMap: Record<string, string> } | null>(null)
+    const [isReportOpen, setIsReportOpen] = useState(false)
+
+    useEffect(() => {
+        // When round changes to > 0, fetch results of previous round
+        if (game.current_round > 0) {
+            const fetchReport = async () => {
+                const roundToFetch = game.current_round - 1
+                console.log("Fetching report for round:", roundToFetch)
+
+                const { data: results } = await supabase
+                    .from('sim_results')
+                    .select('*')
+                    .eq('game_id', game.id)
+                    .eq('round_number', roundToFetch)
+
+                if (results && results.length > 0) {
+                    const typedResults = results as SimResult[]
+                    // Find top team
+                    const top = typedResults.sort((a, b) => b.efficiency_score - a.efficiency_score)[0]
+                    // Find my team result
+                    const my = initialTeam ? typedResults.find(r => r.team_id === initialTeam.id) : undefined
+
+                    // Map team IDs to names (since results only have IDs)
+                    const tMap: Record<string, string> = {}
+                    teams.forEach(t => tMap[t.id] = t.name)
+
+                    setRoundReport({ myResult: my, topResult: top, teamMap: tMap })
+                    setIsReportOpen(true)
+                }
+            }
+            fetchReport()
+        }
+    }, [game.current_round, game.id, initialTeam, teams, supabase])
 
     // --- Derived State ---
     const budgetLeftGlobal = game.budget_pool
@@ -304,11 +395,18 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <div className="text-sm text-muted-foreground uppercase tracking-wider font-bold">Round</div>
-                            <div className="text-3xl font-mono text-foreground">{game.current_round + 1} <span className="text-muted-foreground text-lg">/ {MAX_ROUNDS}</span></div>
+                            <div className="text-3xl font-mono text-foreground flex items-baseline gap-2">
+                                {game.current_round + 1} <span className="text-muted-foreground text-lg">/ {MAX_ROUNDS}</span>
+                            </div>
                         </div>
-                        <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-                            <Clock className="text-blue-400" />
-                        </div>
+                        {timeLeft !== null && (
+                            <div className="text-right">
+                                <div className="text-xs text-muted-foreground uppercase tracking-wider font-bold">Time Left</div>
+                                <div className={`text-3xl font-mono ${timeLeft < 10000 ? 'text-red-500 animate-pulse' : 'text-blue-400'}`}>
+                                    {formatTime(timeLeft)}
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -488,6 +586,63 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                 </div>
             )}
 
+            {/* --- Round Report Dialog --- */}
+            <Dialog open={isReportOpen} onOpenChange={setIsReportOpen}>
+                <DialogContent variant="glass">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl text-center">Round {game.current_round} Complete!</DialogTitle>
+                        <DialogDescription className="text-center">Here's how the market performed.</DialogDescription>
+                    </DialogHeader>
+
+                    {roundReport && (
+                        <div className="space-y-6 my-4">
+                            {/* Top Performer */}
+                            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 text-center">
+                                <div className="text-sm text-yellow-500 font-bold uppercase tracking-wider mb-1">Top Performer</div>
+                                <div className="text-2xl font-heading text-foreground">
+                                    {roundReport.topResult ? roundReport.teamMap[roundReport.topResult.team_id] : 'Unknown'}
+                                </div>
+                                <div className="text-sm text-muted-foreground mt-1">
+                                    Efficiency: <span className="text-green-400 font-mono">{roundReport.topResult?.efficiency_score}</span> / ₹1L
+                                </div>
+                            </div>
+
+                            {/* My Performance */}
+                            {roundReport.myResult ? (
+                                <div className="space-y-2">
+                                    <div className="text-sm text-muted-foreground font-bold uppercase">Your Performance</div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="bg-white/5 rounded p-3">
+                                            <div className="text-xs text-muted-foreground">Downloads</div>
+                                            <div className="text-xl font-mono text-foreground">{Math.floor(roundReport.myResult.downloads_earned).toLocaleString()}</div>
+                                        </div>
+                                        <div className="bg-white/5 rounded p-3">
+                                            <div className="text-xs text-muted-foreground">Spent</div>
+                                            <div className="text-xl font-mono text-foreground">₹{(roundReport.myResult.round_spending / 100000).toFixed(1)}L</div>
+                                        </div>
+                                    </div>
+                                    {roundReport.myResult.event_log && roundReport.myResult.event_log.length > 0 && (
+                                        <div className="bg-blue-500/10 text-blue-300 text-xs p-3 rounded mt-2">
+                                            <strong className="block mb-1 text-blue-400">Market Events:</strong>
+                                            <ul className="list-disc pl-4 space-y-1">
+                                                {roundReport.myResult.event_log.map((e, i) => <li key={i}>{e}</li>)}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <p className="text-center text-muted-foreground italic">You did not participate in this round.</p>
+                            )}
+                        </div>
+                    )}
+
+                    <DialogFooter>
+                        <Button onClick={() => setIsReportOpen(false)} className="w-full">
+                            Continue to Round {game.current_round + 1}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

@@ -9,6 +9,7 @@ export interface SimGame {
   budget_pool: number;
   created_by: string;
   code: string;
+  round_ends_at?: string; // ISO timestamp for when current round ends
 }
 
 export interface SimTeam {
