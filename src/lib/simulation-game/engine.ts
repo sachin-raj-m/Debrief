@@ -41,6 +41,15 @@ export function calculateRoundResults(
             } else if (channel.efficiency_trend === 'increasing') {
                 // e.g. Content: gains 15% per round
                 efficiency *= (1 + (roundNumber - 1) * 0.15);
+            } else if (channel.efficiency_trend === 'volatile') {
+                // Random variance: ±30% efficiency swing each round
+                const variance = 0.7 + Math.random() * 0.6; // 0.7 to 1.3
+                efficiency *= variance;
+                if (variance < 1) {
+                    eventLog.push(`${channel.name}: Bad luck this round (-${Math.round((1 - variance) * 100)}%)`);
+                } else {
+                    eventLog.push(`${channel.name}: Great performance (+${Math.round((variance - 1) * 100)}%)`);
+                }
             }
 
             // b. Competition Penalty (if > 3 teams bid heavily)
@@ -54,10 +63,12 @@ export function calculateRoundResults(
                 }
             }
 
-            // c. Special Effects (Hardcoded for now)
+            // c. Influencer Momentum Bonus
             if (channel.id === 'influencers' && roundNumber > 1) {
-                // Check previous round for momentum (requires history, skipping for MVP complexity)
-                // For MVP: random small bonus
+                // Get a 10% bonus in later rounds due to brand momentum
+                const momentumBonus = 1 + (roundNumber - 1) * 0.1;
+                efficiency *= momentumBonus;
+                eventLog.push(`Influencer momentum: +${Math.round((momentumBonus - 1) * 100)}%`);
             }
 
             // Calculate Downloads

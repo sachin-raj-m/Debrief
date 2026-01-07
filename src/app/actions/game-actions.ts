@@ -117,6 +117,21 @@ export async function createTeam(gameId: string, teamName: string) {
 export async function submitDecision(gameId: string, teamId: string, roundNumber: number, decisions: Record<string, number>) {
     const supabase = await createServerClient()
 
+    // Auth check
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
+    // Verify user is a member of this team
+    const { data: team } = await supabase
+        .from('sim_teams')
+        .select('members')
+        .eq('id', teamId)
+        .single()
+
+    if (!team || !(team.members as string[]).includes(user.id)) {
+        throw new Error('You are not a member of this team')
+    }
+
     // Validation: Check if round is correct
     const { data: game } = await supabase.from('sim_games').select('current_round').eq('id', gameId).single()
     if (!game || game.current_round !== roundNumber) {
@@ -167,6 +182,21 @@ export async function processRound(gameId: string) {
     const decisions = decisionsData as SimDecision[]
     const teams = teamsData as SimTeam[]
 
+    // Handle teams that didn't submit - give them empty decisions (0 spend)
+    const submittedTeamIds = new Set(decisions.map(d => d.team_id))
+    teams.forEach(team => {
+        if (!submittedTeamIds.has(team.id)) {
+            // Team didn't submit - add empty decision
+            decisions.push({
+                id: crypto.randomUUID(),
+                game_id: gameId,
+                team_id: team.id,
+                round_number: currentRound,
+                decisions: {} // Empty = 0 spend on all channels
+            } as SimDecision)
+        }
+    })
+
     // 4. Run Engines
     const results = calculateRoundResults(decisions, teams, currentRound)
 
@@ -199,11 +229,16 @@ export async function processRound(gameId: string) {
     }
 
     // 6. Update Game State (Next Round, Reduce Budget)
-    // Note: Race condition risk here on budget if multiple admin calls, but assuming single facilitator for now.
+    const newBudget = Number(game.budget_pool) - totalRoundSpendLocal
+    const nextRound = currentRound + 1
+
+    // Game ends if: we've completed all rounds OR budget is depleted
+    const isGameOver = nextRound >= 6 || newBudget <= 0
+
     await supabase.from('sim_games').update({
-        current_round: currentRound + 1,
-        budget_pool: Number(game.budget_pool) - totalRoundSpendLocal,
-        status: currentRound + 1 > 6 ? 'completed' : 'active'
+        current_round: nextRound,
+        budget_pool: Math.max(0, newBudget), // Don't go negative
+        status: isGameOver ? 'completed' : 'active'
     }).eq('id', gameId)
 
     revalidatePath(`/game/${gameId}`)

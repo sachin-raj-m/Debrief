@@ -62,25 +62,30 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
         fetchTeams()
     }, [game.id, supabase])
 
-    // Real-time Subscriptions
+    // Real-time Subscriptions - Only depend on game.id to prevent subscription recreation
     useEffect(() => {
         const gameSub = supabase
             .channel('game_updates')
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sim_games', filter: `id=eq.${game.id}` },
                 (payload) => {
                     const newGame = payload.new as SimGame
-                    setGame(newGame)
 
-                    // Reset submission state on new round
-                    if (newGame.current_round !== game.current_round) {
-                        setHasSubmitted(false)
-                        setInputs({})
-                        toast.info(`Round ${newGame.current_round + 1} Started!`)
-                    }
+                    // Use functional update to compare with previous state
+                    setGame(prevGame => {
+                        // Reset submission state on new round
+                        if (newGame.current_round !== prevGame.current_round) {
+                            setHasSubmitted(false)
+                            setInputs({})
+                            setSubmittedTeamIds([]) // Clear submitted teams for new round
+                            toast.info(`Round ${newGame.current_round + 1} Started!`)
+                        }
 
-                    if (newGame.status === 'active' && game.status === 'waiting') {
-                        toast.success("Game Started!")
-                    }
+                        if (newGame.status === 'active' && prevGame.status === 'waiting') {
+                            toast.success("Game Started!")
+                        }
+
+                        return newGame
+                    })
                 }
             )
             .subscribe()
@@ -100,7 +105,7 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
             supabase.removeChannel(gameSub)
             supabase.removeChannel(teamSub)
         }
-    }, [game.id, game.current_round, game.status, supabase])
+    }, [game.id, supabase]) // Only game.id dependency
 
     // Real-time Decisions Subscription (For Facilitator)
     useEffect(() => {
@@ -318,7 +323,7 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                                             </div>
                                             <Slider
                                                 value={[currentSpend]}
-                                                max={channel.max_spend_per_round * 1.5} // Allow overspending to test limits? No, stick to limits for UX simplicity 
+                                                max={channel.max_spend_per_round}
                                                 step={100000}
                                                 onValueChange={(val: number[]) => handleInputChange(channel.id, val[0])}
                                                 className="py-2"
@@ -409,7 +414,7 @@ export default function Dashboard({ game: initialGame, team: initialTeam, curren
                             <Button
                                 size="lg"
                                 onClick={handleSubmit}
-                                disabled={isSubmitting || hasSubmitted || getTotalPlannedSpend() === 0}
+                                disabled={isSubmitting || hasSubmitted || getTotalPlannedSpend() === 0 || getTotalPlannedSpend() > budgetLeftGlobal}
                                 className={`w-full md:w-auto ${hasSubmitted ? 'bg-green-600 hover:bg-green-600' : ''}`}
                                 variant={hasSubmitted ? "default" : "default"} // Use default for submit, or maybe brand color
                             >
