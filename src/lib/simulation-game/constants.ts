@@ -8,60 +8,60 @@ export const ROUND_DURATION_MS = 150000; // 2.5 minutes
 export const CHANNELS: ChannelConfig[] = [
     {
         id: "social_ads",
-        name: "Social Ads",
-        cost_per_1k: 5000,
-        max_spend_per_round: 3000000, // 30L
-        description: "Reliable reach, high initial impact but fatigues quickly.",
+        name: "Social Ads (Instagram/TikTok)",
+        cost_per_1k: 135000, // ₹1.35 Lakh/1k
+        max_spend_per_round: 6750000, // 50k downloads max
+        description: "Fast scale, fatigues after Round 3 (+20% cost).",
         efficiency_trend: "decreasing",
     },
     {
         id: "influencers",
         name: "Influencer Marketing",
-        cost_per_1k: 12000,
-        max_spend_per_round: 2500000,
-        description: "Expensive, but gives a bonus to efficiency in the NEXT round.",
+        cost_per_1k: 180000, // ₹1.80 Lakh/1k
+        max_spend_per_round: 3600000, // 20k downloads max
+        description: "Steady, +10% bonus efficiency in next round.",
         efficiency_trend: "stable",
         special_effect: "momentum_bonus",
     },
     {
+        id: "content_marketing",
+        name: "Content Marketing (YouTube/SEO)",
+        cost_per_1k: 225000, // ₹2.25 Lakh/1k
+        max_spend_per_round: 3375000, // 15k downloads max
+        description: "+5K organic lift in Rounds 4-6.",
+        efficiency_trend: "increasing",
+    },
+    {
         id: "search_ads",
-        name: "Paid Search",
-        cost_per_1k: 8000,
-        max_spend_per_round: 2000000,
-        description: "Steady performance, but costs rise as competition increases.",
+        name: "Paid Search (Google/Apple)",
+        cost_per_1k: 162000, // ₹1.62 Lakh/1k
+        max_spend_per_round: 4050000, // 25k downloads max
+        description: "Costs rise 15% from Round 4 onwards.",
         efficiency_trend: "decreasing",
     },
     {
-        id: "content_marketing",
-        name: "Content Marketing",
-        cost_per_1k: 15000, // High upfront
-        max_spend_per_round: 2000000,
-        description: "High upfront cost, but efficiency drastically improves in later rounds.",
+        id: "email",
+        name: "Email Retargeting",
+        cost_per_1k: 108000, // ₹1.08 Lakh/1k
+        max_spend_per_round: 1080000, // 10k downloads max
+        description: "₹45K setup cost in Round 1. Strong later.",
         efficiency_trend: "increasing",
     },
     {
         id: "referral",
         name: "Referral Program",
-        cost_per_1k: 2000, // Very cheap
-        max_spend_per_round: 1000000, // Capped low to prevent exploit
-        description: "Cheapest option, but effectiveness drops if everyone uses it.",
+        cost_per_1k: 90000, // ₹90k/1k (Lowest CPI)
+        max_spend_per_round: 20000000, // Unlimited (approx 200L cap)
+        description: "Viral: 10K downloads = +2K free in next round.",
         efficiency_trend: "volatile",
         special_effect: "saturation_risk",
     },
     {
-        id: "email",
-        name: "Email Retargeting",
-        cost_per_1k: 3000,
-        max_spend_per_round: 1500000,
-        description: "Requires setup (first round low return), strong later.",
-        efficiency_trend: "increasing",
-    },
-    {
         id: "pr",
         name: "PR Partnerships",
-        cost_per_1k: 20000,
-        max_spend_per_round: 4000000,
-        description: "Huge potential reach, but high variance/risk.",
+        cost_per_1k: 198000, // ₹1.98 Lakh/1k
+        max_spend_per_round: 2376000, // 12k downloads max
+        description: "+20% effect from Round 3 onwards.",
         efficiency_trend: "volatile",
     }
 ];
