@@ -16,6 +16,8 @@ import {
   withErrorHandling,
 } from "@/lib/api/errors";
 import { inviteCollaboratorSchema } from "@/lib/validations/collaborators";
+import { sendEmail } from "@/lib/email/email";
+import { generateInviteEmailHtml, generateInviteEmailText } from "@/lib/email/templates/invite";
 import { ZodError } from "zod";
 import type { Idea, IdeaCollaborator } from "@/types/database";
 
@@ -57,10 +59,10 @@ export const POST = withErrorHandling(async (request: NextRequest, context: Rout
   const { email, role } = validatedData;
   const supabase = await createServerClient();
 
-  // 1. Verify idea exists and get owner info
+  // 1. Verify idea exists and get owner info + title for email
   const { data: idea, error: ideaError } = await supabase
     .from("ideas")
-    .select("id, user_id")
+    .select("id, user_id, title")
     .eq("id", ideaId)
     .single();
 
@@ -169,10 +171,44 @@ export const POST = withErrorHandling(async (request: NextRequest, context: Rout
     throw new Error(`Failed to create invitation: ${insertError?.message || "Unknown error"}`);
   }
 
-  // 7. TODO: Send invitation email
-  // This would integrate with your email service (SendGrid, Resend, etc.)
-  // const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/invites/${inviteToken}/accept`;
-  // await sendInvitationEmail({ email, inviteUrl, inviterName: user.full_name, ideaTitle });
+  // 7. Send invitation email (non-blocking - invitation succeeds even if email fails)
+  try {
+    // Get inviter's name for the email
+    const { data: inviterProfile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .single();
+
+    const inviterName = inviterProfile?.full_name || "A team member";
+    const ideaTitle = idea.title || "an idea";
+
+    const emailResult = await sendEmail({
+      to: email,
+      subject: `${inviterName} invited you to collaborate on "${ideaTitle}"`,
+      html: generateInviteEmailHtml({
+        recipientEmail: email,
+        inviterName,
+        ideaTitle,
+        role,
+        inviteToken,
+      }),
+      text: generateInviteEmailText({
+        recipientEmail: email,
+        inviterName,
+        ideaTitle,
+        role,
+        inviteToken,
+      }),
+    });
+
+    if (!emailResult.success) {
+      console.warn(`[Invite] Email sending failed for ${email}: ${emailResult.error}`);
+    }
+  } catch (emailError) {
+    // Log but don't fail the invitation
+    console.error("[Invite] Email sending error:", emailError);
+  }
 
   return successResponse({
     data: collaborator,
