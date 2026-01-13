@@ -12,11 +12,13 @@ export async function GET(request: Request) {
     // Parallel fetch: Analytics + Game History
     const [
       { data: summary },
+      { data: groupedSummary },
       { data: efficiency },
       { data: channelStats },
       { data: games }
     ] = await Promise.all([
       supabase.from('analytics_games_summary').select('*').single(),
+      supabase.from('analytics_games_by_type').select('*'),
       supabase.from('analytics_game_efficiency').select('*').single(),
       supabase.from('analytics_channel_popularity').select('*').limit(10),
       supabase.from('sim_games').select('*, sim_teams(*)').order('created_at', { ascending: false }).limit(50)
@@ -52,6 +54,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       summary: summary || {},
+      groupedSummary: groupedSummary || [],
       efficiency: efficiency?.avg_efficiency || 0,
       channelStats: channelStats || [],
       games: enrichedGames
