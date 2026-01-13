@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { StatsCard } from "./StatsCard";
-import { Gamepad2, Timer, CheckCircle, TrendingUp, Download, Trophy, ExternalLink, Calendar, Users, Hash } from "lucide-react";
+import { Gamepad2, Timer, CheckCircle, TrendingUp, Download, Trophy, ExternalLink, Calendar, Users, Hash, Layers } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SimGame, SimTeam } from "@/types/simulation";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import Leaderboard from "@/components/game/Leaderboard";
@@ -24,6 +25,15 @@ interface EnrichedGame extends SimGame {
     sim_teams: EnrichedTeam[];
 }
 
+interface GroupedSummary {
+    game_type: string;
+    total_games: number;
+    status_waiting: number;
+    status_active: number;
+    status_completed: number;
+    total_downloads_all_time: number;
+}
+
 interface GameData {
     summary: {
         total_games: number;
@@ -32,6 +42,7 @@ interface GameData {
         status_completed: number;
         total_downloads_all_time: number;
     };
+    groupedSummary: GroupedSummary[];
     efficiency: number;
     channelStats: Array<{
         channel_name: string;
@@ -84,36 +95,88 @@ export function GameAnalytics() {
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* 1. Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatsCard
-                    title="Total Games"
-                    value={data.summary.total_games || 0}
-                    icon={Gamepad2}
-                    className="border-purple-500/20 hover:border-purple-500/40"
-                    description={`${data.summary.status_active} Active`}
-                />
-                <StatsCard
-                    title="Downloads Generated"
-                    value={(data.summary.total_downloads_all_time || 0).toLocaleString()}
-                    icon={Download}
-                    className="border-blue-500/20 hover:border-blue-500/40"
-                    description="Across all sessions"
-                />
-                <StatsCard
-                    title="Avg Efficiency"
-                    value={Number(data.efficiency || 0).toFixed(0)}
-                    icon={TrendingUp}
-                    className="border-emerald-500/20 hover:border-emerald-500/40"
-                    description="Downloads per 1L"
-                />
-                <StatsCard
-                    title="Completion Rate"
-                    value={`${data.summary.total_games ? Math.round((data.summary.status_completed / data.summary.total_games) * 100) : 0}%`}
-                    icon={CheckCircle}
-                    className="border-amber-500/20 hover:border-amber-500/40"
-                    description="Games fully finished"
-                />
-            </div>
+            {/* 1. Statistics Tabs */}
+            <Tabs defaultValue="all" className="w-full">
+                <div className="flex items-center justify-between mb-6">
+                    <TabsList className="bg-white/5 border border-white/10">
+                        <TabsTrigger value="all" className="data-[state=active]:bg-white/10">All Games</TabsTrigger>
+                        {data.groupedSummary.map(g => (
+                            <TabsTrigger key={g.game_type} value={g.game_type} className="capitalize data-[state=active]:bg-white/10">
+                                {g.game_type}
+                            </TabsTrigger>
+                        ))}
+                    </TabsList>
+                </div>
+
+                <TabsContent value="all" className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <StatsCard
+                            title="Total Games"
+                            value={data.summary.total_games || 0}
+                            icon={Gamepad2}
+                            className="border-purple-500/20 hover:border-purple-500/40"
+                            description={`${data.summary.status_active} Active`}
+                        />
+                        <StatsCard
+                            title="Downloads Generated"
+                            value={(data.summary.total_downloads_all_time || 0).toLocaleString()}
+                            icon={Download}
+                            className="border-blue-500/20 hover:border-blue-500/40"
+                            description="Across all sessions"
+                        />
+                        <StatsCard
+                            title="Avg Efficiency"
+                            value={Number(data.efficiency || 0).toFixed(0)}
+                            icon={TrendingUp}
+                            className="border-emerald-500/20 hover:border-emerald-500/40"
+                            description="Downloads per 1L"
+                        />
+                        <StatsCard
+                            title="Completion Rate"
+                            value={`${data.summary.total_games ? Math.round((data.summary.status_completed / data.summary.total_games) * 100) : 0}%`}
+                            icon={CheckCircle}
+                            className="border-amber-500/20 hover:border-amber-500/40"
+                            description="Games fully finished"
+                        />
+                    </div>
+                </TabsContent>
+
+                {data.groupedSummary.map(g => (
+                    <TabsContent key={g.game_type} value={g.game_type} className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <StatsCard
+                                title={`${g.game_type} Games`}
+                                value={g.total_games || 0}
+                                icon={Layers}
+                                className="border-purple-500/20 hover:border-purple-500/40"
+                                description={`${g.status_active} Active`}
+                            />
+                            <StatsCard
+                                title="Downloads"
+                                value={(g.total_downloads_all_time || 0).toLocaleString()}
+                                icon={Download}
+                                className="border-blue-500/20 hover:border-blue-500/40"
+                                description="Module specific"
+                            />
+                            <StatsCard
+                                title="Completion %"
+                                value={`${g.total_games ? Math.round((g.status_completed / g.total_games) * 100) : 0}%`}
+                                icon={CheckCircle}
+                                className="border-amber-500/20 hover:border-amber-500/40"
+                                description="Finish rate"
+                            />
+                            {/* Placeholder for specific stat */}
+                            <StatsCard
+                                title="Waiting"
+                                value={g.status_waiting}
+                                icon={Timer}
+                                className="border-white/10 hover:border-white/20"
+                                description="In lobby"
+                            />
+                        </div>
+                    </TabsContent>
+                ))}
+            </Tabs>
 
             {/* 2. Charts & Status */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
